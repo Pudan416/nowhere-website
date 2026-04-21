@@ -1061,12 +1061,12 @@
     .balance-card--pinned {
       position: fixed !important;
       top: var(--balance-pin-top, 64px);
-      left: 50%;
-      transform: translateX(-50%);
-      width: min(860px, calc(100vw - 2rem));
+      left: 0 !important;
+      right: 0 !important;
+      margin: 0 auto !important;
+      width: min(860px, calc(100vw - 2rem)) !important;
       z-index: 200;
-      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
-      transition: box-shadow 0.2s;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
     }
 
     /* ── Reduced motion ───────────────────────────────────── */
@@ -1824,7 +1824,7 @@
       });
     }
 
-    /* ── Sticky balance card ───────────────────────────────── */
+    /* ── Sticky balance card (pins only during spend section) ── */
     (function initStickyBalance() {
       const card  = document.querySelector('.balance-card');
       const demo  = document.querySelector('.balance-demo');
@@ -1832,18 +1832,17 @@
       const nav   = document.querySelector('nav');
       if (!card || !demo || !spend) return;
 
-      let pinned  = false;
-      let spacer  = null;
+      let pinned = false;
+      let cardH  = 0;
 
       function navH() { return nav ? nav.offsetHeight : 64; }
 
       function pin() {
         if (pinned) return;
         pinned = true;
-        spacer = document.createElement('div');
-        spacer.style.height = card.offsetHeight + 'px';
-        demo.insertBefore(spacer, card);
-        card.style.setProperty('--balance-pin-top', navH() + 'px');
+        cardH  = card.offsetHeight;
+        demo.style.paddingBottom = cardH + 'px';
+        card.style.setProperty('--balance-pin-top', (navH() + 8) + 'px');
         card.classList.add('balance-card--pinned');
       }
 
@@ -1852,15 +1851,18 @@
         pinned = false;
         card.classList.remove('balance-card--pinned');
         card.style.removeProperty('--balance-pin-top');
-        if (spacer) { spacer.remove(); spacer = null; }
+        demo.style.paddingBottom = '';
       }
 
-      window.addEventListener('scroll', () => {
-        const h           = navH();
-        const demoTop     = demo.getBoundingClientRect().top;
-        const spendBottom = spend.getBoundingClientRect().bottom;
-        if (demoTop < h && spendBottom > h) pin(); else unpin();
-      }, { passive: true });
+      function check() {
+        const r = spend.getBoundingClientRect();
+        // spend section is on screen: its top < viewport bottom AND its bottom > 0
+        const visible = r.top < window.innerHeight && r.bottom > 0;
+        if (visible) pin(); else unpin();
+      }
+
+      window.addEventListener('scroll', check, { passive: true });
+      check();
     })();
 
 
