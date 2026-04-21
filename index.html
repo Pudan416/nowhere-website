@@ -611,15 +611,14 @@
       position: absolute;
       inset: 0;
       z-index: 0;
-      background-color: rgba(255,211,105,.82);
+      background-color: #FFD369;
       background-image:
         linear-gradient(90deg,
-          rgba(255,255,255,.72)  0%,
-          rgba(255,255,255,.40) 20%,
-          rgba(255,255,255,.10) 50%,
-          rgba(255,255,255,0)   75%),
+          rgba(255,255,255,.30)  0%,
+          rgba(255,255,255,.10) 30%,
+          rgba(255,255,255,0)   60%),
         radial-gradient(ellipse 120% 180% at 8% 50%,
-          rgba(0,0,0,.08) 0%,
+          rgba(0,0,0,.06) 0%,
           rgba(0,0,0,0)   58%);
       backdrop-filter: blur(24px) saturate(1.4);
       -webkit-backdrop-filter: blur(24px) saturate(1.4);
@@ -1460,9 +1459,14 @@
 
     let activePalette = PALETTES.sunset;
 
-    const currentF = { steps: .5, sleep: .5 };
-    const targetF  = { steps: .5, sleep: .5 };
-    const DIM = 0.06;
+    const GRAD_STATES = {
+      noData:    { gold: 0,    coral: 0.68,  navy: 0.42, night: 0.08, glow: 0.35 },
+      stepsOnly: { gold: 0.95, coral: 0.85,  navy: 0.14, night: 0.03, glow: 0.80 },
+      sleepOnly: { gold: 0,    coral: 0.35,  navy: 0.55, night: 0.55, glow: 0.25 },
+      balanced:  { gold: 0.95, coral: 0.782, navy: 0.48, night: 0.45, glow: 0.51 },
+    };
+    const currentGrad = { ...GRAD_STATES.noData };
+    let targetGrad = GRAD_STATES.noData;
 
     let lerpPalette = null;
     let lerpT = 1;
@@ -1507,31 +1511,48 @@
 
     function draw() {
       if (!ctx) { requestAnimationFrame(draw); return; }
-      currentF.steps += (targetF.steps - currentF.steps) * .028;
-      currentF.sleep += (targetF.sleep - currentF.sleep) * .028;
+      for (const k of Object.keys(currentGrad)) {
+        currentGrad[k] += (targetGrad[k] - currentGrad[k]) * .028;
+      }
 
       if (lerpT < 1) lerpT = Math.min(lerpT + 0.018, 1);
       const pal = currentPaletteColors();
 
       ctx.clearRect(0, 0, W, H);
 
-      ctx.filter = canvasSaturation < 1 ? `saturate(${canvasSaturation})` : 'none';
-      ctx.fillStyle = pal.bg;
-      ctx.fillRect(0, 0, W, H);
+      canvasSaturation += (targetSaturation - canvasSaturation) * 0.025;
+      ctx.filter = canvasSaturation < 0.999 ? `saturate(${canvasSaturation})` : 'none';
 
       const breathe = 1 + Math.sin(t * .0006) * .04;
-      const sf = Math.min(currentF.steps * breathe, 1);
-      const lf = Math.min(currentF.sleep * breathe, 1);
+      const g = currentGrad;
 
-      const x1 = W * .78, y1 = 0;
-      const x2 = W * .22, y2 = H;
-      const grad = ctx.createLinearGradient(x1, y1, x2, y2);
-      grad.addColorStop(0,    hexAlpha(pal.bright, sf * .82));
-      grad.addColorStop(0.36, hexAlpha(pal.warm,   sf * .62));
-      grad.addColorStop(0.64, hexAlpha(pal.cool,   lf * .68));
-      grad.addColorStop(1,    hexAlpha(pal.dark,   lf * .90));
+      // Base: always dark
+      ctx.fillStyle = pal.dark;
+      ctx.fillRect(0, 0, W, H);
 
-      ctx.fillStyle = grad;
+      // Steps layer: bright/warm bleeds in from the top
+      const stepsGrad = ctx.createLinearGradient(0, 0, 0, H);
+      stepsGrad.addColorStop(0,    hexAlpha(pal.bright, Math.min(g.gold  * breathe, 1)));
+      stepsGrad.addColorStop(0.33, hexAlpha(pal.warm,   Math.min(g.coral * breathe, 1)));
+      stepsGrad.addColorStop(0.72, 'rgba(0,0,0,0)');
+      stepsGrad.addColorStop(1,    'rgba(0,0,0,0)');
+      ctx.fillStyle = stepsGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Sleep layer: cool/dark reinforces from the bottom
+      const sleepGrad = ctx.createLinearGradient(0, H * 0.28, 0, H);
+      sleepGrad.addColorStop(0,   'rgba(0,0,0,0)');
+      sleepGrad.addColorStop(0.4, hexAlpha(pal.cool, Math.min(g.navy  * breathe, 1)));
+      sleepGrad.addColorStop(1,   hexAlpha(pal.dark, Math.min(g.night * breathe, 1)));
+      ctx.fillStyle = sleepGrad;
+      ctx.fillRect(0, 0, W, H);
+
+      // Glow: radial warm bloom driven by steps
+      const glowR = Math.min(W, H) * 0.65;
+      const glowGrad = ctx.createRadialGradient(W / 2, H * 0.35, 0, W / 2, H * 0.35, glowR);
+      glowGrad.addColorStop(0, hexAlpha(pal.warm, Math.min(g.glow * breathe * 0.55, 1)));
+      glowGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glowGrad;
       ctx.fillRect(0, 0, W, H);
 
       ctx.filter = 'none';
@@ -1539,7 +1560,7 @@
 
       // Dark veil to keep text readable regardless of how many elements accumulate
       ctx.globalCompositeOperation = 'source-over';
-      ctx.fillStyle = 'rgba(0,0,0,0.38)';
+      ctx.fillStyle = 'rgba(0,0,0,0.18)';
       ctx.fillRect(0, 0, W, H);
 
       t = (t + 1) % 1e7;
@@ -1548,7 +1569,10 @@
 
     const canvasElements = [];
     const MAX_CANVAS_ELEMENTS = 16;
-    let canvasSaturation = 1.0;
+    let canvasSaturation = 0.4;
+    let targetSaturation = 0.4;
+    let earnedSat  = 0.4;  // goes up when steps/sleep are active
+    let satCeiling = 1.0;  // goes down as tariff time is unlocked
 
     draw();
 
@@ -1686,8 +1710,8 @@
         });
 
         totalUnlockedMins += mins;
-        // 3 cards × 60 min = 180 min → fully desaturated
-        canvasSaturation = Math.max(0, 1 - totalUnlockedMins / 180);
+        satCeiling = Math.max(0, 1 - totalUnlockedMins / 180);
+        targetSaturation = earnedSat * satCeiling;
       });
     });
 
@@ -1748,13 +1772,11 @@
       const stepsOn = sourceState.steps > 0;
       const sleepOn = sourceState.sleep > 0;
 
-      if (!stepsOn && !sleepOn) {
-        targetF.steps = .5;
-        targetF.sleep = .5;
-      } else {
-        targetF.steps = stepsOn ? 1.0 : DIM;
-        targetF.sleep = sleepOn ? 1.0 : DIM;
-      }
+      if (stepsOn && sleepOn)  { targetGrad = GRAD_STATES.balanced;  earnedSat = 1.0; }
+      else if (stepsOn)        { targetGrad = GRAD_STATES.stepsOnly; earnedSat = 1.0; }
+      else if (sleepOn)        { targetGrad = GRAD_STATES.sleepOnly; earnedSat = 1.0; }
+      else                     { targetGrad = GRAD_STATES.noData;    earnedSat = 0.4; }
+      targetSaturation = earnedSat * satCeiling;
     }
 
     function handleSourceClick(card) {
