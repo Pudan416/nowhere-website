@@ -1,0 +1,1808 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nowhere — earn your time</title>
+  <meta name="description" content="A screen-time resistance app for iOS. Convert real-world activity into colors. Spend colors to unlock your feeds. You cannot buy them.">
+  <meta name="theme-color" content="#222831">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Nowhere — earn your time">
+  <meta property="og:description" content="You are not nowhere. You are now here.">
+  <meta property="og:url" content="https://itsnowhere.net">
+  <meta property="og:image" content="https://itsnowhere.net/assets/og-image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nowhere — earn your time">
+  <meta name="twitter:description" content="A screen-time resistance app for iOS. Convert real-world activity into colors.">
+  <meta name="twitter:image" content="https://itsnowhere.net/assets/og-image.png">
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── Tokens ─────────────────────────────────────────────── */
+    :root {
+      --brand-gold: #FFD369;
+      --accent: rgb(255 211 105);
+      --accent-25: rgb(255 211 105 / 0.25);
+      --brand-gold-alt: #FFBF65;
+      --night-bg: #222831;
+      --night-bg-2: #30303A;
+      --night-fg: #F2F2F2;
+      --night-fg-2: rgba(242,242,242,.78);
+      --night-fg-3: rgba(242,242,242,.50);
+      --night-stroke: rgba(64,64,64,1);
+
+      --energy-gold:  #FFBF65;
+      --energy-coral: #FD8973;
+      --energy-navy:  #003A6C;
+      --energy-night: #002646;
+
+      --font-serif: "Source Serif 4", Georgia, serif;
+      --font-ui: -apple-system, "SF Pro Rounded", "SF Pro Text", "Inter", system-ui, sans-serif;
+      --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
+
+      --ease-std: cubic-bezier(0.4,0,0.2,1);
+    }
+
+    /* ── Reset ──────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    html {
+      background: var(--night-bg);
+      transition: background 1.4s ease;
+    }
+
+    body {
+      background: transparent;
+      color: var(--night-fg);
+      font-family: var(--font-ui);
+      font-size: 18px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    img { display: block; max-width: 100%; }
+
+    /* ── Canvas background ─────────────────────────────────── */
+    #canvas-bg {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ── Site wrapper ──────────────────────────────────────── */
+    .site { position: relative; z-index: 2; }
+
+    /* ── Grain overlay ── */
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: .18;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ── Nav ──────────────────────────────────────────────── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--nav-bg, rgba(34,40,49,.6));
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      transition: background 1.4s ease, border-color 1.4s ease;
+      border-bottom: 1px solid var(--night-stroke);
+    }
+
+    .nav-wordmark {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+    .nav-links a {
+      font-size: 15px;
+      color: var(--night-fg-2);
+      transition: color .2s var(--ease-std);
+    }
+    .nav-links a:hover { color: var(--night-fg); }
+
+    .nav-cta {
+      background: var(--brand-gold);
+      color: #141414;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 8px 18px;
+      border-radius: 9999px;
+      transition: opacity .2s var(--ease-std), transform .2s var(--ease-std);
+    }
+    .nav-cta:hover { opacity: .85; transform: scale(.97); }
+
+    /* ── Hero ─────────────────────────────────────────────── */
+    .hero {
+      min-height: 100svh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 80px 24px 60px;
+      gap: 0;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--brand-gold);
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp .6s .2s var(--ease-std) forwards;
+    }
+
+    .hero-wordmark {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      position: relative;
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: clamp(72px, 14vw, 180px);
+      line-height: 1;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      opacity: 0;
+      animation: fadeUp .7s .35s var(--ease-std) forwards;
+    }
+    .hero-wordmark .gold { color: var(--brand-gold); }
+
+    .wm-sep {
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      opacity: 0;
+      max-width: 0;
+      overflow: visible;
+      transition: opacity .6s .15s var(--ease-std), max-width .55s var(--ease-std), padding .55s var(--ease-std);
+      padding: 0;
+      flex-shrink: 0;
+    }
+    .wm-ray {
+      width: clamp(60px, 8vw, 140px);
+      height: auto;
+      object-fit: contain;
+      flex-shrink: 0;
+      mix-blend-mode: screen;
+      display: block;
+      margin-top: calc(-0.45em);
+    }
+    .wm-left, .wm-right {
+      transition: letter-spacing .5s var(--ease-std);
+    }
+    .hero-wordmark.split .wm-sep {
+      opacity: 1;
+      max-width: 160px;
+      padding: 0 .15em;
+    }
+    .hero-wordmark.split .wm-left,
+    .hero-wordmark.split .wm-right {
+      letter-spacing: .06em;
+    }
+
+    .hero-tagline {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-size: clamp(20px, 2.5vw, 28px);
+      line-height: 1.4;
+      color: var(--night-fg-2);
+      margin-top: 32px;
+      max-width: 560px;
+      font-style: italic;
+      opacity: 0;
+      animation: fadeUp .7s .5s var(--ease-std) forwards;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 48px;
+      flex-wrap: wrap;
+      justify-content: center;
+      opacity: 0;
+      animation: fadeUp .7s .65s var(--ease-std) forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--brand-gold);
+      color: #141414;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 14px 28px;
+      border-radius: 9999px;
+      transition: opacity .2s var(--ease-std), transform .2s var(--ease-std);
+    }
+    .btn-primary:hover { opacity: .85; transform: scale(.97); }
+
+    .btn-ghost {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid var(--night-stroke);
+      color: var(--night-fg-2);
+      font-size: 16px;
+      padding: 14px 28px;
+      border-radius: 9999px;
+      transition: border-color .2s var(--ease-std), color .2s var(--ease-std);
+    }
+    .btn-ghost:hover { border-color: rgba(255,255,255,.25); color: var(--night-fg); }
+    .btn-icon {
+      width: 16px;
+      height: 16px;
+      object-fit: contain;
+      mix-blend-mode: multiply;
+    }
+
+    /* ── Section base ─────────────────────────────────────── */
+    section {
+      padding: 120px 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .section-label {
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: rgba(255,211,105,0.9);
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-size: clamp(32px, 4vw, 48px);
+      line-height: 1.2;
+      letter-spacing: -.02em;
+      margin-bottom: 16px;
+    }
+    .section-heading em {
+      color: var(--brand-gold);
+      font-style: italic;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--night-fg-2);
+      line-height: 1.55;
+      max-width: 540px;
+      margin-bottom: 48px;
+    }
+
+    .section-hint {
+      font-size: 14px;
+      font-style: italic;
+      color: var(--night-fg-3);
+      margin-top: -36px;
+      margin-bottom: 48px;
+    }
+
+    /* ── Divider ──────────────────────────────────────────── */
+    .divider {
+      max-width: 1100px;
+      margin: 0 auto;
+      height: 1px;
+      background: var(--night-stroke);
+    }
+
+    /* ── How it works — three lines ───────────────────────── */
+    .how {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    .how-line {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-size: clamp(19px, 2.5vw, 24px);
+      line-height: 1.5;
+      letter-spacing: -.01em;
+      color: var(--night-fg-2);
+      text-align: left;
+      display: grid;
+      grid-template-columns: 28px auto 1fr;
+      gap: 0 16px;
+      align-items: baseline;
+    }
+    .how-line em {
+      color: var(--brand-gold);
+      font-style: italic;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+    .how-step {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid var(--brand-gold);
+      color: var(--brand-gold);
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    /* ── Sources ──────────────────────────────────────────── */
+    .sources-triangle {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      width: 100%;
+    }
+    .sources-row {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      width: 100%;
+    }
+    .sources-row--top .source-card  { flex: 0 1 380px; }
+    .sources-row--bottom .source-card { flex: 0 1 248px; }
+
+    .source-card {
+      background: var(--card-bg, rgba(26,26,26,0.55));
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      border: 1px solid var(--night-stroke);
+      transition: background 1.4s ease, border-color 1.4s ease, transform .2s var(--ease-std);
+      border-radius: 16px;
+      padding: 20px;
+      min-width: 0;
+      cursor: pointer;
+      transition: transform .2s var(--ease-std), border-color .2s var(--ease-std);
+      user-select: none;
+    }
+    .source-preview {
+      height: 110px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+    .source-preview--steps {
+      background: radial-gradient(circle at 50% 65%, #FFBF65 0%, rgba(255,191,101,.35) 45%, transparent 72%);
+    }
+    .source-preview--sleep {
+      background: radial-gradient(circle at 50% 38%, #003A6C 0%, #002646 55%, #0d1520 100%);
+    }
+    .source-preview--body {
+      background: rgba(140,110,130,.06);
+    }
+    .source-preview--mind {
+      background: rgba(196,181,253,.05);
+    }
+    .source-preview--heart {
+      background: radial-gradient(circle at 50% 55%, rgba(253,137,115,.22) 0%, transparent 68%);
+    }
+    .source-asset {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      mix-blend-mode: screen;
+    }
+    .source-name {
+      font-family: var(--font-ui);
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: -.005em;
+      margin-bottom: 6px;
+      color: var(--night-fg);
+    }
+    .source-desc {
+      font-size: 14px;
+      color: var(--night-fg-3);
+      line-height: 1.55;
+    }
+    .source-max {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      letter-spacing: .08em;
+      color: rgba(242,242,242,.35);
+      margin-top: 14px;
+      font-variant-numeric: tabular-nums;
+    }
+    .source-max-bar {
+      height: 4px;
+      background: rgba(255,255,255,.08);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin-top: 7px;
+    }
+    .source-max-fill {
+      height: 100%;
+      background: var(--brand-gold);
+      border-radius: 9999px;
+      width: 0%;
+      transition: width .45s var(--ease-std);
+    }
+    .source-card:hover { transform: translateY(-3px); border-color: rgba(255,211,105,.25); }
+    .source-card:active { transform: scale(.97); }
+    .source-card--full { cursor: default; }
+    .source-card--full:hover { transform: none; border-color: rgba(64,64,64,1); }
+    .source-card--full:active { transform: none; }
+    .source-tap-hint {
+      font-size: 12px;
+      font-family: var(--font-ui);
+      font-weight: 500;
+      color: rgba(242,242,242,.22);
+      margin-top: 8px;
+      letter-spacing: .06em;
+      text-transform: lowercase;
+      transition: color .2s;
+    }
+    .source-card:hover .source-tap-hint { color: rgba(242,242,242,.45); }
+    .source-card--full .source-tap-hint { color: rgba(242,242,242,.10); }
+
+    /* ── Interactive balance card ─────────────────────────── */
+    .balance-demo {
+      margin-bottom: 40px;
+    }
+    .balance-card {
+      background: var(--card-bg, rgba(26,26,26,0.55));
+      backdrop-filter: blur(20px) saturate(1.2);
+      -webkit-backdrop-filter: blur(20px) saturate(1.2);
+      border: 1px solid var(--night-stroke);
+      transition: background 1.4s ease, border-color 1.4s ease;
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    .balance-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 14px 16px 0;
+    }
+    .balance-eyebrow {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 800;
+      letter-spacing: 0.1em;
+      color: rgba(255,211,105,0.9);
+      text-transform: uppercase;
+    }
+    .balance-timer {
+      font-family: var(--font-ui);
+      font-size: 13px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.55);
+    }
+    .balance-card-row {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      padding: 6px 16px 10px;
+    }
+    .balance-big {
+      font-family: var(--font-ui);
+      font-weight: 700;
+      font-size: 34px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+      line-height: 1;
+      color: var(--night-fg);
+    }
+    .balance-sm {
+      font-size: 15px;
+      color: rgba(255,255,255,0.6);
+      font-family: var(--font-ui);
+      font-weight: 400;
+    }
+    .balance-bar {
+      height: 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.12);
+      position: relative;
+      overflow: hidden;
+      margin: 0 16px;
+    }
+    .balance-bar-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      height: 100%;
+      background: #FFD369;
+      border-radius: 6px;
+      transition: width .5s var(--ease-std);
+    }
+    .balance-bar-spent {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: transparent;
+      border: 1px solid #FFD369;
+      border-radius: 6px;
+      transition: left .5s var(--ease-std), width .5s var(--ease-std);
+    }
+    .balance-chips {
+      display: flex;
+      gap: 6px;
+      padding: 10px 16px 14px;
+    }
+    .balance-chip {
+      font-family: var(--font-ui);
+      background: rgba(255,255,255,0.05);
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+      color: var(--night-fg);
+    }
+    .balance-chip .chip-label {
+      color: rgba(255,255,255,0.55);
+      font-weight: 500;
+      margin-right: 4px;
+    }
+
+    @media (max-width: 680px) {
+      .sources-row { flex-wrap: wrap; }
+      .sources-row--top .source-card,
+      .sources-row--bottom .source-card { flex: 1 1 calc(50% - 6px); min-width: 140px; }
+    }
+
+    /* ── Tariffs ──────────────────────────────────────────── */
+    .tariffs {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .tariff {
+      display: flex;
+      align-items: center;
+      min-height: 84px;
+      border-radius: 42px;
+      overflow: hidden;
+      font-family: var(--font-ui);
+      background: transparent;
+      position: relative;
+    }
+
+    .tariff-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      background-color: rgba(255,211,105,.82);
+      background-image:
+        linear-gradient(90deg,
+          rgba(255,255,255,.72)  0%,
+          rgba(255,255,255,.40) 20%,
+          rgba(255,255,255,.10) 50%,
+          rgba(255,255,255,0)   75%),
+        radial-gradient(ellipse 120% 180% at 8% 50%,
+          rgba(0,0,0,.08) 0%,
+          rgba(0,0,0,0)   58%);
+      backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-backdrop-filter: blur(24px) saturate(1.4);
+      -webkit-mask-image: linear-gradient(to right, black 35%, transparent 92%);
+      mask-image: linear-gradient(to right, black 35%, transparent 92%);
+      transition: background-color .35s ease;
+    }
+
+    .tariff--unlocked .tariff-bg {
+      background-color: rgba(255,255,255,.90);
+      background-image: none;
+      box-shadow: inset 0 0 0 1px rgba(255,211,105,.40);
+      -webkit-mask-image: linear-gradient(to right, transparent 8%, black 55%);
+      mask-image: linear-gradient(to right, transparent 8%, black 55%);
+    }
+
+    .tariff-well,
+    .tariff-body,
+    .tariff-lock,
+    .tariff-menu { position: relative; z-index: 1; }
+
+    .tariff-well {
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
+      margin-left: 16px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.10);
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .tariff-well img {
+      width: 46px;
+      height: 46px;
+      object-fit: cover;
+    }
+
+    .tariff-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 7px;
+      padding: 14px 4px 14px 12px;
+      min-width: 0;
+    }
+
+    .tariff-name {
+      font-size: 16px;
+      font-weight: 500;
+      color: #000;
+    }
+
+    .tariff-pill-row {
+      display: flex;
+      gap: 5px;
+      flex-wrap: nowrap;
+    }
+
+    .tariff-pill {
+      display: inline-flex;
+      align-items: center;
+      border: 0.5px solid rgb(0 0 0 / 0.1);
+      border-radius: 9999px;
+      padding: 5px 10px;
+      font-size: 13px;
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
+      background: rgb(255 211 105);
+      color: #000;
+      cursor: pointer;
+      transition: opacity .15s ease;
+      -webkit-appearance: none;
+      appearance: none;
+      white-space: nowrap;
+    }
+    .tariff-pill:hover { opacity: .8; }
+    .tariff-pill--dim {
+      background: rgb(255 211 105 / 0.25);
+      color: rgb(0 0 0 / 0.55);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
+    .tariff-progress {
+      display: none;
+      align-items: center;
+      gap: 8px;
+    }
+    .tariff--unlocked .tariff-pill-row { display: none; }
+    .tariff--unlocked .tariff-progress { display: flex; }
+
+    .tariff-progress-track {
+      flex: 1;
+      height: 5px;
+      border-radius: 9999px;
+      background: rgba(0,0,0,.10);
+      position: relative;
+      overflow: hidden;
+    }
+    .tariff-progress-fill {
+      position: absolute;
+      inset: 0 auto 0 0;
+      border-radius: 9999px;
+      background: var(--brand-gold);
+      transition: width 60s linear;
+    }
+    .tariff-progress-time {
+      font: 500 13px/1 var(--font-mono);
+      color: rgba(0,0,0,.45);
+      white-space: nowrap;
+    }
+
+    .tariff-lock {
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      padding-right: 2px;
+      opacity: .30;
+      color: #000;
+    }
+    .tariff--unlocked .tariff-lock { opacity: 1; color: #b8860b; }
+
+    .tariff-menu {
+      flex: 0 0 40px;
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      color: rgba(0,0,0,.28);
+      cursor: default;
+      user-select: none;
+      letter-spacing: .04em;
+    }
+
+    /* ── Feeds strip ──────────────────────────────────────── */
+    .feeds-strip {
+      margin-top: 32px;
+      max-width: 560px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .feeds-icons {
+      display: grid;
+      grid-template-columns: repeat(5, 40px);
+      gap: 10px;
+      justify-content: center;
+    }
+    .feed-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      object-fit: cover;
+      opacity: .7;
+      transition: opacity .2s var(--ease-std);
+    }
+    .feed-icon:hover { opacity: 1; }
+    .feed-icon--more {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--night-stroke);
+      border: 1px solid rgba(255,255,255,.1);
+      display: grid;
+      place-items: center;
+      font-size: 18px;
+      color: var(--night-fg-3);
+      font-family: var(--font-ui);
+    }
+    .feeds-caption {
+      margin-top: 16px;
+      font-size: 15px;
+      color: var(--night-fg-3);
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    /* ── App Mockups ──────────────────────────────────────── */
+    .mockups {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      width: 100%;
+    }
+    .mockup-item {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .mockup-frame {
+      width: 100%;
+      overflow: hidden;
+      background: none;
+      border: none;
+    }
+    .mockup-frame img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .mockup-name {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -.01em;
+      color: var(--night-fg);
+    }
+    .mockup-desc {
+      font-size: 15px;
+      color: var(--night-fg-3);
+      line-height: 1.5;
+      margin-top: -4px;
+    }
+    @media (max-width: 680px) {
+      .mockups {
+        grid-template-columns: 1fr;
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+      }
+    }
+
+    /* ── Palette picker ──────────────────────────────────── */
+    .palette-picker {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .palette-option {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      background: none;
+      border: 2px solid transparent;
+      border-radius: 22px;
+      padding: 10px;
+      cursor: pointer;
+      transition: border-color .3s var(--ease-std), transform .25s var(--ease-std);
+      color: var(--night-fg-3);
+      font: inherit;
+    }
+    .palette-option:hover {
+      border-color: rgba(255,211,105,.35);
+      transform: translateY(-3px);
+      color: var(--night-fg-2);
+    }
+    .palette-option--active {
+      border-color: var(--brand-gold);
+      color: var(--night-fg);
+    }
+    .palette-swatch {
+      width: 120px;
+      height: 120px;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,.30);
+      transition: box-shadow .3s var(--ease-std);
+    }
+    .palette-option--active .palette-swatch {
+      box-shadow: 0 8px 36px rgba(0,0,0,.50);
+    }
+    .palette-label {
+      font-family: var(--font-ui);
+      font-size: 14px;
+      font-weight: 600;
+      letter-spacing: .1em;
+      text-transform: lowercase;
+    }
+
+    /* ── Editorial quote ──────────────────────────────────── */
+    .editorial {
+      padding: 120px 24px;
+      text-align: center;
+    }
+
+    .editorial-inner {
+      max-width: 820px;
+      margin: 0 auto;
+    }
+
+    .editorial-quote {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-style: italic;
+      font-size: clamp(24px, 4vw, 42px);
+      line-height: 1.35;
+      letter-spacing: -.01em;
+      color: var(--night-fg-2);
+    }
+
+    .editorial-source {
+      margin-top: 28px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--night-fg-3);
+    }
+
+    /* ── CTA strip ────────────────────────────────────────── */
+    .cta-strip {
+      padding: 120px 24px;
+      text-align: center;
+    }
+
+    .cta-inner {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .cta-heading {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-size: clamp(36px, 6vw, 72px);
+      line-height: 1.1;
+      letter-spacing: -.03em;
+    }
+
+    .cta-heading em {
+      color: var(--brand-gold);
+      font-style: italic;
+    }
+
+    .cta-sub {
+      margin-top: 20px;
+      font-size: 16px;
+      color: var(--night-fg-3);
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 40px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── App icon ─────────────────────────────────────────── */
+    .app-icon-wrap {
+      margin: 0 auto 48px;
+      width: 120px;
+      height: 120px;
+    }
+
+    .app-icon {
+      width: 120px;
+      height: 120px;
+      border-radius: 26px;
+      overflow: hidden;
+      box-shadow: 0 24px 64px rgba(0,0,0,.6);
+    }
+
+    .app-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    /* ── Footer ───────────────────────────────────────────── */
+    footer {
+      padding: 48px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-top: 1px solid var(--night-stroke);
+    }
+
+    .footer-wordmark {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+    .footer-wordmark .now { color: var(--brand-gold); }
+
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 15px;
+      color: var(--night-fg-3);
+      transition: color .2s var(--ease-std);
+    }
+    .footer-links a:hover { color: var(--night-fg); }
+
+    .footer-copy {
+      font-size: 14px;
+      color: var(--night-fg-3);
+    }
+
+    /* ── Animations ───────────────────────────────────────── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .reveal-ready .reveal {
+      opacity: 0;
+      transform: translateY(32px);
+      transition: opacity .7s var(--ease-std), transform .7s var(--ease-std);
+    }
+    .reveal-ready .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* ── Mobile hamburger ─────────────────────────────────── */
+    .nav-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--night-fg);
+      cursor: pointer;
+      padding: 4px;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* ── Responsive ───────────────────────────────────────── */
+    @media (max-width: 768px) {
+      nav { padding: 18px 20px; }
+
+      section { padding: 80px 20px; }
+      .editorial { padding: 80px 20px; }
+      .cta-strip { padding: 80px 20px; }
+      footer { padding: 40px 20px; flex-direction: column; align-items: flex-start; }
+
+      .tariffs { flex-direction: column; }
+    }
+
+    /* ── Reduced motion ───────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      html { scroll-behavior: auto; }
+      .reveal { opacity: 1; transform: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <canvas id="canvas-bg"></canvas>
+
+  <div class="site">
+    <div class="grain" aria-hidden="true"></div>
+
+    <!-- Nav -->
+    <nav aria-label="Main navigation">
+      <a href="/" class="nav-wordmark">NOWHERE</a>
+      
+      <a href="#download" class="nav-cta">get the app</a>
+    </nav>
+
+    <main>
+
+    <!-- ════════════════════════════════════════════════════════
+         1. HERO — what is this thing?
+         ════════════════════════════════════════════════════════ -->
+    <header class="hero">
+      <p class="hero-eyebrow">a screen-time resistance app for ios</p>
+      <h1 class="hero-wordmark" id="wordmark">
+        <span class="wm-left">NOW</span>
+        <span class="wm-sep">
+          <img src="assets/app-icon.png" alt="" aria-hidden="true" class="wm-ray">
+        </span>
+        <span class="wm-right">HERE</span>
+      </h1>
+      <p class="hero-tagline">"you are not nowhere. you are <em>now here</em>."</p>
+      <div class="hero-actions">
+        <a href="#download" class="btn-primary">
+          <img src="assets/apple.png" alt="" aria-hidden="true" class="btn-icon">
+          download on the app store
+        </a>
+        <a href="#how" class="btn-ghost">
+          how it works
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
+        </a>
+      </div>
+    </header>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════════
+         2. HOW IT WORKS — the 3-step loop
+         ════════════════════════════════════════════════════════ -->
+    <section id="how" style="text-align: center;">
+      <p class="section-label reveal">how it works</p>
+      <h2 class="section-heading reveal" style="max-width: 600px; margin-left: auto; margin-right: auto;">One loop. <em>Three moves.</em></h2>
+      <div class="how reveal">
+        <p class="how-line"><span class="how-step">1</span> <em>notice.</em> <span>walk, sleep, move, think, connect — your real-world activity fills a daily pool of 100 colors.</span></p>
+        <p class="how-line"><span class="how-step">2</span> <em>spend.</em> <span>use your colors to unlock feeds. pick a time window — 10 min, 30 min, an hour.</span></p>
+        <p class="how-line"><span class="how-step">3</span> <em>repeat.</em> <span>each day is a new canvas. colors reset, feeds close, and the loop starts fresh.</span></p>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════════
+         3. EARN — sources + interactive balance
+         ════════════════════════════════════════════════════════ -->
+    <section id="earn" style="text-align: center;">
+      <p class="section-label reveal">earn colors</p>
+      <h2 class="section-heading reveal">Five sources. <em>100 colors a day.</em></h2>
+      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">Colors come from five parts of your day. Tap a source to watch it add up.</p>
+
+      <!-- Balance card demo -->
+      <div class="balance-demo reveal">
+        <div class="balance-card">
+          <div class="balance-top">
+            <div class="balance-eyebrow">TODAY · <span id="bal-earned">0</span>/100</div>
+            <div class="balance-timer">tap a source to earn</div>
+          </div>
+          <div class="balance-card-row">
+            <span class="balance-big" id="bal-current">0</span>
+            <span class="balance-sm">· earned today</span>
+          </div>
+          <div class="balance-bar">
+            <div class="balance-bar-fill" id="bal-bar"></div>
+            <div class="balance-bar-spent" id="bal-bar-spent"></div>
+          </div>
+          <div class="balance-chips">
+            <div class="balance-chip"><span class="chip-label">steps</span><span class="chip-val" data-chip="steps">0</span></div>
+            <div class="balance-chip"><span class="chip-label">sleep</span><span class="chip-val" data-chip="sleep">0</span></div>
+            <div class="balance-chip"><span class="chip-label">body</span><span class="chip-val" data-chip="body">0</span></div>
+            <div class="balance-chip"><span class="chip-label">mind</span><span class="chip-val" data-chip="mind">0</span></div>
+            <div class="balance-chip"><span class="chip-label">heart</span><span class="chip-val" data-chip="heart">0</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sources-triangle reveal">
+        <div class="sources-row sources-row--top">
+          <div class="source-card" data-source="steps" data-step="20" role="button" tabindex="0" aria-label="Add steps colors">
+            <div class="source-preview source-preview--steps"></div>
+            <p class="source-name">steps</p>
+            <p class="source-desc">walk more, earn more. the canvas warms with every step.</p>
+            <p class="source-max"><span class="source-earned">0</span> / 20</p>
+            <div class="source-max-bar"><div class="source-max-fill"></div></div>
+            <p class="source-tap-hint">tap to add</p>
+          </div>
+          <div class="source-card" data-source="sleep" data-step="20" role="button" tabindex="0" aria-label="Add sleep colors">
+            <div class="source-preview source-preview--sleep"></div>
+            <p class="source-name">sleep</p>
+            <p class="source-desc">hit your sleep target and the canvas deepens into navy.</p>
+            <p class="source-max"><span class="source-earned">0</span> / 20</p>
+            <div class="source-max-bar"><div class="source-max-fill"></div></div>
+            <p class="source-tap-hint">tap to add</p>
+          </div>
+        </div>
+
+        <div class="sources-row sources-row--bottom">
+          <div class="source-card" data-source="body" data-step="5" role="button" tabindex="0" aria-label="Add body colors">
+            <div class="source-preview source-preview--body">
+              <img src="assets/body_preview.png" alt="" aria-hidden="true" class="source-asset">
+            </div>
+            <p class="source-name">body</p>
+            <p class="source-desc">workouts, stretching — anything physical.</p>
+            <p class="source-max"><span class="source-earned">0</span> / 20</p>
+            <div class="source-max-bar"><div class="source-max-fill"></div></div>
+            <p class="source-tap-hint">tap to add · max 4×</p>
+          </div>
+          <div class="source-card" data-source="mind" data-step="5" role="button" tabindex="0" aria-label="Add mind colors">
+            <div class="source-preview source-preview--mind">
+              <img src="assets/mind_preview.png" alt="" aria-hidden="true" class="source-asset">
+            </div>
+            <p class="source-name">mind</p>
+            <p class="source-desc">reading, learning, anything that feeds your thinking.</p>
+            <p class="source-max"><span class="source-earned">0</span> / 20</p>
+            <div class="source-max-bar"><div class="source-max-fill"></div></div>
+            <p class="source-tap-hint">tap to add · max 4×</p>
+          </div>
+          <div class="source-card" data-source="heart" data-step="5" role="button" tabindex="0" aria-label="Add heart colors">
+            <div class="source-preview source-preview--heart">
+              <img src="assets/heart_preview.png" alt="" aria-hidden="true" class="source-asset">
+            </div>
+            <p class="source-name">heart</p>
+            <p class="source-desc">time with people, moments that ground you.</p>
+            <p class="source-max"><span class="source-earned">0</span> / 20</p>
+            <div class="source-max-bar"><div class="source-max-fill"></div></div>
+            <p class="source-tap-hint">tap to add · max 4×</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- Editorial — emotional hinge between earn and spend -->
+    <div class="editorial">
+      <figure class="editorial-inner reveal">
+        <blockquote class="editorial-quote">
+          "i keep ending days i never touched.<br>
+          the canvas showed me that."
+        </blockquote>
+        <figcaption class="editorial-source">from the notes</figcaption>
+      </figure>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════════
+         4. SPEND — tariffs + supported apps
+         ════════════════════════════════════════════════════════ -->
+    <section id="spend" style="text-align: center;">
+      <p class="section-label reveal">spend colors</p>
+      <h2 class="section-heading reveal">Unlock a feed. <em>Watch it drain.</em></h2>
+      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">Pick a time window, pay in colors. When the timer runs out, the feed closes. Earn more to open it again.</p>
+      <p class="section-hint reveal" style="margin-left: auto; margin-right: auto;">each pill shows duration and its cost in colors.</p>
+
+      <div class="tariffs reveal">
+        <div class="tariff">
+          <div class="tariff-bg"></div>
+          <div class="tariff-well"><img src="assets/youtube.png" alt="YouTube"></div>
+          <div class="tariff-body">
+            <span class="tariff-name">YouTube</span>
+            <div class="tariff-pill-row">
+              <button class="tariff-pill" data-mins="10" data-pct="100">10 min · 4</button>
+              <button class="tariff-pill" data-mins="30" data-pct="100">30 min · 10</button>
+              <button class="tariff-pill" data-mins="60">1 hour · 20</button>
+            </div>
+            <div class="tariff-progress">
+              <div class="tariff-progress-track"><div class="tariff-progress-fill"></div></div>
+              <span class="tariff-progress-time"></span>
+            </div>
+          </div>
+          <div class="tariff-lock">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="10" height="8" rx="2"/><path d="M4 6V4a2 2 0 0 1 4 0v2"/><line x1="6" y1="9" x2="6" y2="11"/></svg>
+          </div>
+          <div class="tariff-menu">···</div>
+        </div>
+
+        <div class="tariff">
+          <div class="tariff-bg"></div>
+          <div class="tariff-well"><img src="assets/instagram.png" alt="Instagram"></div>
+          <div class="tariff-body">
+            <span class="tariff-name">Instagram</span>
+            <div class="tariff-pill-row">
+              <button class="tariff-pill" data-mins="10">10 min · 4</button>
+              <button class="tariff-pill" data-mins="30">30 min · 10</button>
+              <button class="tariff-pill" data-mins="60">1 hour · 20</button>
+            </div>
+            <div class="tariff-progress">
+              <div class="tariff-progress-track"><div class="tariff-progress-fill"></div></div>
+              <span class="tariff-progress-time"></span>
+            </div>
+          </div>
+          <div class="tariff-lock">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="10" height="8" rx="2"/><path d="M4 6V4a2 2 0 0 1 4 0v2"/><line x1="6" y1="9" x2="6" y2="11"/></svg>
+          </div>
+          <div class="tariff-menu">···</div>
+        </div>
+
+        <div class="tariff">
+          <div class="tariff-bg"></div>
+          <div class="tariff-well"><img src="assets/tiktok.png" alt="TikTok"></div>
+          <div class="tariff-body">
+            <span class="tariff-name">TikTok</span>
+            <div class="tariff-pill-row">
+              <button class="tariff-pill" data-mins="10">10 min · 4</button>
+              <button class="tariff-pill" data-mins="30">30 min · 10</button>
+              <button class="tariff-pill" data-mins="60">1 hour · 20</button>
+            </div>
+            <div class="tariff-progress">
+              <div class="tariff-progress-track"><div class="tariff-progress-fill"></div></div>
+              <span class="tariff-progress-time"></span>
+            </div>
+          </div>
+          <div class="tariff-lock">
+            <svg width="12" height="14" viewBox="0 0 12 14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="10" height="8" rx="2"/><path d="M4 6V4a2 2 0 0 1 4 0v2"/><line x1="6" y1="9" x2="6" y2="11"/></svg>
+          </div>
+          <div class="tariff-menu">···</div>
+        </div>
+      </div>
+
+      <div class="feeds-strip reveal">
+        <div class="feeds-icons">
+          <img src="assets/instagram.png"  alt="Instagram"  class="feed-icon">
+          <img src="assets/youtube.png"    alt="YouTube"    class="feed-icon">
+          <img src="assets/tiktok.png"     alt="TikTok"     class="feed-icon">
+          <img src="assets/x.png"          alt="X"          class="feed-icon">
+          <img src="assets/facebook.png"   alt="Facebook"   class="feed-icon">
+          <img src="assets/snapchat.png"   alt="Snapchat"   class="feed-icon">
+          <img src="assets/telegram.png"   alt="Telegram"   class="feed-icon">
+          <img src="assets/whatsapp.png"   alt="WhatsApp"   class="feed-icon">
+          <img src="assets/pinterest.png"  alt="Pinterest"  class="feed-icon">
+          <div class="feed-icon feed-icon--more">+</div>
+        </div>
+        <p class="feeds-caption">templates for these apps are built in. any other app with a screen time limit works too.</p>
+      </div>
+    </section>
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════════
+         5. THE APP — mockups + themes
+         ════════════════════════════════════════════════════════ -->
+    <section id="the-app" style="text-align: center;">
+      <p class="section-label reveal">the app</p>
+      <h2 class="section-heading reveal">Your day, <em>on your screen.</em></h2>
+      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">A living canvas that reflects your energy, activity, and rest — as light and form.</p>
+
+      <div class="mockups reveal">
+        <div class="mockup-item">
+          <div class="mockup-frame">
+            <img src="assets/Mockup_canvas.png" alt="Canvas screen">
+          </div>
+          <p class="mockup-name">canvas</p>
+          <p class="mockup-desc">your day painted in real time. every source shows up as light, color, and form.</p>
+        </div>
+        <div class="mockup-item">
+          <div class="mockup-frame">
+            <img src="assets/Mockup_widgets.png" alt="Widgets">
+          </div>
+          <p class="mockup-name">widgets</p>
+          <p class="mockup-desc">your balance on the home screen. glance without opening the app.</p>
+        </div>
+        <div class="mockup-item">
+          <div class="mockup-frame">
+            <img src="assets/Mockup_wallpaper.png" alt="Wallpaper">
+          </div>
+          <p class="mockup-name">wallpaper</p>
+          <p class="mockup-desc">the canvas becomes your lock screen. your day follows you everywhere.</p>
+        </div>
+      </div>
+    </section>
+
+    
+
+    <div class="divider"></div>
+
+    <!-- ════════════════════════════════════════════════════════
+         7. DOWNLOAD — final CTA
+         ════════════════════════════════════════════════════════ -->
+    <div class="cta-strip" id="download">
+      <div class="cta-inner">
+        <div class="app-icon-wrap reveal">
+          <div class="app-icon">
+            <img src="assets/app-icon.png" alt="Nowhere app icon" onerror="this.parentElement.style.background='#1a1a1a'">
+          </div>
+        </div>
+        <h2 class="cta-heading reveal">get <em>now here</em>.</h2>
+        <p class="cta-sub reveal">available on ios. free.</p>
+        <div class="cta-actions reveal">
+          <!-- TODO: replace href with actual App Store link -->
+          <a href="https://apps.apple.com/rs/app/nowhere-now-here/id6753218397" class="btn-primary">
+            download on the app store
+          </a>
+        </div>
+      </div>
+    </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <a href="/" class="footer-wordmark">NOWHERE</a>
+      <ul class="footer-links">
+        <li><a href="mailto:hello@itsnowhere.net">hello@itsnowhere.net</a></li>
+        <li><a href="privacy.html">privacy</a></li>
+        <li><a href="terms.html">terms</a></li>
+      </ul>
+      <p class="footer-copy">&copy; <span id="copy-year">2026</span> Konstantin Pudan</p>
+    </footer>
+
+  </div>
+
+  <script>
+    /* ── Utility functions ─────────────────────────────────────── */
+    function hexAlpha(hex, a) {
+      const r = parseInt(hex.slice(1,3),16);
+      const g = parseInt(hex.slice(3,5),16);
+      const b = parseInt(hex.slice(5,7),16);
+      return `rgba(${r},${g},${b},${a})`;
+    }
+
+    function lerpHex(a, b, t) {
+      const ar = parseInt(a.slice(1,3),16), ag = parseInt(a.slice(3,5),16), ab = parseInt(a.slice(5,7),16);
+      const br = parseInt(b.slice(1,3),16), bg2 = parseInt(b.slice(3,5),16), bb = parseInt(b.slice(5,7),16);
+      const r = Math.round(ar + (br - ar) * t);
+      const g = Math.round(ag + (bg2 - ag) * t);
+      const bl = Math.round(ab + (bb - ab) * t);
+      return '#' + ((1<<24)|(r<<16)|(g<<8)|bl).toString(16).slice(1);
+    }
+
+    /* ── Generative canvas background ─────────────────────────── */
+    const canvas = document.getElementById('canvas-bg');
+    const ctx = canvas ? canvas.getContext('2d') : null;
+    let W = 0, H = 0;
+
+    function resize() {
+      if (!canvas) return;
+      W = canvas.width  = window.innerWidth;
+      H = canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener('resize', resize);
+
+    const PALETTES = {
+      sunset: {
+        bg:     '#002646',
+        bright: '#FFBF65',
+        warm:   '#FD8973',
+        cool:   '#003A6C',
+        dark:   '#002646',
+      },
+      ocean: {
+        bg:     '#0B1E33',
+        bright: '#7FDBDA',
+        warm:   '#3A9FBF',
+        cool:   '#1A4B6E',
+        dark:   '#0B1E33',
+      },
+      aurora: {
+        bg:     '#0F1B2D',
+        bright: '#C4B5FD',
+        warm:   '#7C6FBF',
+        cool:   '#1F6E5C',
+        dark:   '#0F1B2D',
+      },
+      dusk: {
+        bg:     '#384856',
+        bright: '#EEDDC9',
+        warm:   '#C0AC98',
+        cool:   '#5E7282',
+        dark:   '#384856',
+      },
+    };
+
+    let activePalette = PALETTES.sunset;
+
+    const currentF = { steps: .5, sleep: .5 };
+    const targetF  = { steps: .5, sleep: .5 };
+    const DIM = 0.06;
+
+    let lerpPalette = null;
+    let lerpT = 1;
+
+    function switchPalette(key) {
+      const p = PALETTES[key];
+      if (!p || p === activePalette) return;
+
+      lerpPalette = { from: { ...activePalette }, to: p };
+      lerpT = 0;
+      activePalette = p;
+
+      document.documentElement.style.setProperty('--night-bg',   p.dark);
+      document.documentElement.style.setProperty('--night-bg-2', p.cool);
+      document.documentElement.style.setProperty('--night-stroke', hexAlpha(p.bright, 0.12));
+      document.documentElement.style.setProperty('--nav-bg', hexAlpha(p.dark, 0.6));
+      document.documentElement.style.setProperty('--card-bg', hexAlpha(p.dark, 0.55));
+
+      document.querySelectorAll('.palette-option').forEach(el => {
+        el.classList.toggle('palette-option--active', el.dataset.palette === key);
+      });
+    }
+
+    document.querySelectorAll('.palette-option').forEach(btn => {
+      btn.addEventListener('click', () => switchPalette(btn.dataset.palette));
+    });
+
+    let t = 0;
+
+
+    function currentPaletteColors() {
+      if (!lerpPalette || lerpT >= 1) return activePalette;
+      const f = lerpPalette.from, to = lerpPalette.to, e = lerpT;
+      return {
+        bg:     lerpHex(f.bg,     to.bg,     e),
+        bright: lerpHex(f.bright, to.bright, e),
+        warm:   lerpHex(f.warm,   to.warm,   e),
+        cool:   lerpHex(f.cool,   to.cool,   e),
+        dark:   lerpHex(f.dark,   to.dark,   e),
+      };
+    }
+
+    function draw() {
+      if (!ctx) { requestAnimationFrame(draw); return; }
+      currentF.steps += (targetF.steps - currentF.steps) * .028;
+      currentF.sleep += (targetF.sleep - currentF.sleep) * .028;
+
+      if (lerpT < 1) lerpT = Math.min(lerpT + 0.018, 1);
+      const pal = currentPaletteColors();
+
+      ctx.clearRect(0, 0, W, H);
+
+      ctx.filter = canvasSaturation < 1 ? `saturate(${canvasSaturation})` : 'none';
+      ctx.fillStyle = pal.bg;
+      ctx.fillRect(0, 0, W, H);
+
+      const breathe = 1 + Math.sin(t * .0006) * .04;
+      const sf = Math.min(currentF.steps * breathe, 1);
+      const lf = Math.min(currentF.sleep * breathe, 1);
+
+      const x1 = W * .78, y1 = 0;
+      const x2 = W * .22, y2 = H;
+      const grad = ctx.createLinearGradient(x1, y1, x2, y2);
+      grad.addColorStop(0,    hexAlpha(pal.bright, sf * .82));
+      grad.addColorStop(0.36, hexAlpha(pal.warm,   sf * .62));
+      grad.addColorStop(0.64, hexAlpha(pal.cool,   lf * .68));
+      grad.addColorStop(1,    hexAlpha(pal.dark,   lf * .90));
+
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, W, H);
+
+      ctx.filter = 'none';
+      drawCanvasElements();
+
+      // Dark veil to keep text readable regardless of how many elements accumulate
+      ctx.globalCompositeOperation = 'source-over';
+      ctx.fillStyle = 'rgba(0,0,0,0.38)';
+      ctx.fillRect(0, 0, W, H);
+
+      t = (t + 1) % 1e7;
+      requestAnimationFrame(draw);
+    }
+
+    const canvasElements = [];
+    const MAX_CANVAS_ELEMENTS = 16;
+    let canvasSaturation = 1.0;
+
+    draw();
+
+    /* ── Body / Mind / Heart canvas elements ───────────────── */
+    const bodyImg   = new Image(); bodyImg.src = 'assets/body_preview.png';
+    const mindImgs  = Array.from({ length: 18 }, (_, i) => { const img = new Image(); img.src = `assets/mind ${i + 1}.png`; return img; });
+    const heartImgs = Array.from({ length: 12 }, (_, i) => { const img = new Image(); img.src = `assets/heart ${i + 1}.png`; return img; });
+
+    function spawnCanvasElement(type) {
+      if (canvasElements.length >= MAX_CANVAS_ELEMENTS) canvasElements.shift();
+      const mg = 0.13;
+      const x  = mg + Math.random() * (1 - 2 * mg);
+      const y  = mg + Math.random() * (1 - 2 * mg);
+      const phase      = Math.random() * Math.PI * 2;
+      const driftSpeed = 0.08 + Math.random() * 0.12;
+
+      let size, opacity, img, hue;
+      if (type === 'body') {
+        size    = 0.16 + Math.random() * 0.16;
+        opacity = 0.45 + Math.random() * 0.30;
+        img     = bodyImg;
+        hue     = Math.floor(Math.random() * 360);
+      } else if (type === 'mind') {
+        size    = 0.10 + Math.random() * 0.08;
+        opacity = 0.50 + Math.random() * 0.25;
+        img     = mindImgs[Math.floor(Math.random() * mindImgs.length)];
+      } else {
+        size    = 0.20 + Math.random() * 0.08;
+        opacity = 0.50 + Math.random() * 0.25;
+        img     = heartImgs[Math.floor(Math.random() * heartImgs.length)];
+      }
+      canvasElements.push({ type, x, y, size, opacity, phase, driftSpeed, img, hue });
+    }
+
+    function drawCanvasElements() {
+      if (!ctx) return;
+      const minDim = Math.min(W, H);
+
+      canvasElements.forEach(el => { try {
+        if (el.type === 'body' && el.img && el.img.complete && el.img.naturalWidth > 0) {
+          const wx = Math.sin(t * 0.00028 + el.phase) * 0.003;
+          const wy = Math.cos(t * 0.00035 + el.phase * 1.3) * 0.003;
+          const cx = (el.x + wx) * W;
+          const cy = (el.y + wy) * H;
+          const breathe = 1 + Math.sin(t * 0.00045 + el.phase) * 0.09;
+          const r = el.size * minDim * 1.05 * breathe;
+          const hsl = `hsla(${el.hue},90%,65%,`;
+          // Ring gradient: transparent center → colored band → transparent edge
+          const grad = ctx.createRadialGradient(cx, cy, r * 0.45, cx, cy, r);
+          grad.addColorStop(0,    hsl + '0)');
+          grad.addColorStop(0.35, hsl + (el.opacity * 0.40) + ')');
+          grad.addColorStop(0.65, hsl + (el.opacity * 0.28) + ')');
+          grad.addColorStop(1,    hsl + '0)');
+          ctx.save();
+          ctx.globalCompositeOperation = 'screen';
+          ctx.fillStyle = grad;
+          ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI * 2); ctx.fill();
+          ctx.globalAlpha = el.opacity * breathe * 0.22;
+          ctx.drawImage(el.img, cx - r, cy - r, r * 2, r * 2);
+          ctx.restore();
+
+        } else if (el.type === 'mind' && el.img && el.img.complete && el.img.naturalWidth > 0) {
+          const speed = 0.001 * (0.03 + el.driftSpeed * 0.06);
+          const tc    = t * speed;
+
+          const mx = el.x + Math.sin(tc * 1.3 + el.phase) * 0.22
+                           + Math.sin(tc * 3.1 + el.phase) * 0.07
+                           + Math.sin(tc * 7.3 + el.phase) * 0.025;
+          const my = el.y + Math.cos(tc * 1.1 + el.phase) * 0.20
+                           + Math.cos(tc * 2.9 + el.phase) * 0.06
+                           + Math.cos(tc * 6.7 + el.phase) * 0.02;
+          const cx = Math.max(0.06, Math.min(0.94, mx)) * W;
+          const cy = Math.max(0.06, Math.min(0.94, my)) * H;
+          const r  = el.size * minDim * 1.1;
+
+          const dt = 0.016;
+          const nx = el.x + Math.sin((tc + dt) * 1.3 + el.phase) * 0.22;
+          const ny = el.y + Math.cos((tc + dt) * 1.1 + el.phase) * 0.20;
+          const angle = Math.atan2((ny - my) * H, (nx - mx) * W) + Math.PI * 1.5;
+
+          ctx.save();
+          ctx.globalAlpha = el.opacity * 0.76;
+          ctx.globalCompositeOperation = 'screen';
+          ctx.translate(cx, cy); ctx.rotate(angle);
+          ctx.drawImage(el.img, -r, -r, r * 2, r * 2);
+          ctx.restore();
+
+        } else if (el.type === 'heart' && el.img && el.img.complete && el.img.naturalWidth > 0) {
+          const wx = Math.sin(t * 0.00038 + el.phase) * 0.004;
+          const wy = Math.cos(t * 0.00045 + el.phase) * 0.004;
+          const cx = (el.x + wx) * W;
+          const cy = (el.y + wy) * H;
+          const r  = el.size * minDim * 2.2;
+
+          const inward = Math.atan2(H * 0.5 - cy, W * 0.5 - cx);
+          const sweep  = Math.sin(t * 0.00085 * el.driftSpeed * 8 + el.phase) * 0.22;
+          const angle  = inward + Math.PI * 0.5 + sweep;
+
+          const breathe = 0.92 + Math.sin(t * 0.0007 + el.phase) * 0.06;
+          ctx.save();
+          ctx.globalAlpha = el.opacity * breathe;
+          ctx.globalCompositeOperation = 'screen';
+          ctx.translate(cx, cy); ctx.rotate(angle);
+          ctx.drawImage(el.img, -r * 0.5, -r, r, r * 2);
+          ctx.restore();
+        }
+      } catch(_) {} });
+    }
+
+    
+
+    /* ── State ───────────────────────────────────────────────── */
+    const sourceState = { steps: 0, sleep: 0, body: 0, mind: 0, heart: 0 };
+    let colorBalance = 0;
+    let colorEarned  = 0;
+    let totalSpent   = 0;
+
+    /* ── Tariff pill tap ────────────────────────────────────── */
+    let totalUnlockedMins = 0;
+
+    document.querySelectorAll('.tariff-pill').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.tariff');
+        if (card.classList.contains('tariff--unlocked')) return;
+
+        card.classList.add('tariff--unlocked');
+        const mins = parseInt(btn.dataset.mins || '10', 10);
+        card.querySelector('.tariff-progress-time').textContent = mins + 'm';
+        const fill = card.querySelector('.tariff-progress-fill');
+        fill.style.transition = 'none';
+        fill.style.width = '100%';
+        requestAnimationFrame(() => {
+          fill.style.transition = 'width ' + (mins * 60) + 's linear';
+          fill.style.width = '0%';
+        });
+
+        totalUnlockedMins += mins;
+        // 3 cards × 60 min = 180 min → fully desaturated
+        canvasSaturation = Math.max(0, 1 - totalUnlockedMins / 180);
+      });
+    });
+
+    function syncBalanceUI() {
+      document.getElementById('bal-current').textContent = colorEarned;
+      document.getElementById('bal-earned').textContent  = colorEarned;
+      document.getElementById('bal-bar').style.width     = (colorEarned) + '%';
+
+      const spentBar = document.getElementById('bal-bar-spent');
+      if (totalSpent > 0) {
+        spentBar.style.left = colorBalance + '%';
+        spentBar.style.width = totalSpent + '%';
+      }
+
+      document.querySelectorAll('.chip-val').forEach(el => {
+        const key = el.dataset.chip;
+        if (key && sourceState[key] !== undefined) el.textContent = sourceState[key];
+      });
+
+    }
+
+    /* ── Wordmark split on scroll ──────────────────────────── */
+    const wordmark = document.getElementById('wordmark');
+    if (wordmark) {
+      const checkSplit = () => {
+        wordmark.classList.toggle('split', window.scrollY > 60);
+      };
+      window.addEventListener('scroll', checkSplit, { passive: true });
+      document.addEventListener('scroll', checkSplit, { passive: true });
+      checkSplit();
+    }
+
+    /* ── Scroll reveal ─────────────────────────────────────── */
+    const revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window) {
+      document.body.classList.add('reveal-ready');
+
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            observer.unobserve(e.target);
+          }
+        });
+      }, { threshold: 0.01, rootMargin: '0px 0px 0px 0px' });
+
+      revealEls.forEach(el => observer.observe(el));
+    }
+
+    /* ── Interactive balance demo ──────────────────────────── */
+    function updateBalanceDisplay() {
+      colorEarned  = Object.values(sourceState).reduce((a, b) => a + b, 0);
+      colorBalance = Math.max(0, colorEarned - totalSpent);
+      syncBalanceUI();
+    }
+
+    function updateCanvas() {
+      const stepsOn = sourceState.steps > 0;
+      const sleepOn = sourceState.sleep > 0;
+
+      if (!stepsOn && !sleepOn) {
+        targetF.steps = .5;
+        targetF.sleep = .5;
+      } else {
+        targetF.steps = stepsOn ? 1.0 : DIM;
+        targetF.sleep = sleepOn ? 1.0 : DIM;
+      }
+    }
+
+    function handleSourceClick(card) {
+      const key  = card.dataset.source;
+      const step = parseInt(card.dataset.step, 10);
+      const max  = 20;
+
+      if (sourceState[key] >= max) return;
+
+      sourceState[key] = Math.min(sourceState[key] + step, max);
+
+      card.querySelector('.source-earned').textContent = sourceState[key];
+      card.querySelector('.source-max-fill').style.width =
+        (sourceState[key] / max * 100) + '%';
+
+      if (sourceState[key] >= max) {
+        card.classList.add('source-card--full');
+        card.querySelector('.source-tap-hint').textContent = 'maxed out';
+      }
+
+      updateBalanceDisplay();
+      updateCanvas();
+
+      const balCard = document.querySelector('.balance-card');
+      if (balCard) {
+        balCard.style.transition = 'transform .15s ease';
+        balCard.style.transform = 'scale(1.03)';
+        setTimeout(() => { balCard.style.transform = 'scale(1)'; }, 150);
+      }
+
+      if (key === 'body' || key === 'mind' || key === 'heart') {
+        spawnCanvasElement(key);
+      }
+    }
+
+    document.querySelectorAll('.source-card[data-source]').forEach(card => {
+      card.addEventListener('click', () => handleSourceClick(card));
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleSourceClick(card);
+        }
+      });
+    });
+
+    /* ── Auto copyright year ───────────────────────────────── */
+    const yearEl = document.getElementById('copy-year');
+    if (yearEl) yearEl.textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>

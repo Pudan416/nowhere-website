@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="night">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Terms of Use — Nowhere</title>
+  <meta name="description" content="Nowhere terms of use — your rights, responsibilities, and how the service works.">
+  <meta name="theme-color" content="#222831">
+  <link rel="icon" href="assets/favicon.ico" sizes="any">
+  <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,300..900;1,8..60,300..900&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --brand-gold: #FFD369;
+      --accent: rgb(255 211 105);
+      --night-bg: #222831;
+      --night-bg-2: #30303A;
+      --night-fg: #F2F2F2;
+      --night-fg-2: rgba(242,242,242,.78);
+      --night-fg-3: rgba(242,242,242,.50);
+      --night-stroke: rgba(255,255,255,.08);
+      --font-serif: "Source Serif 4", Georgia, serif;
+      --font-ui: "Inter", system-ui, sans-serif;
+      --font-mono: "JetBrains Mono", ui-monospace, monospace;
+      --ease-std: cubic-bezier(0.4,0,0.2,1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; background: var(--night-bg); }
+
+    body {
+      background: transparent;
+      color: var(--night-fg);
+      font-family: var(--font-ui);
+      font-size: 17px;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    .grain {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      pointer-events: none;
+      opacity: .18;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    .site { position: relative; z-index: 2; }
+
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 48px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(34,40,49,.6);
+      backdrop-filter: blur(20px) saturate(1.4);
+      -webkit-backdrop-filter: blur(20px) saturate(1.4);
+      border-bottom: 1px solid var(--night-stroke);
+    }
+    .nav-wordmark {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+    }
+    .nav-back {
+      font-size: 14px;
+      color: var(--night-fg-2);
+      transition: color .2s var(--ease-std);
+    }
+    .nav-back:hover { color: var(--night-fg); }
+
+    .legal {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 80px 24px 120px;
+    }
+
+    .legal-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--brand-gold);
+      margin-bottom: 16px;
+    }
+
+    .legal h1 {
+      font-family: var(--font-serif);
+      font-weight: 300;
+      font-size: clamp(28px, 4vw, 44px);
+      line-height: 1.2;
+      letter-spacing: -.02em;
+      margin-bottom: 12px;
+    }
+
+    .legal-date {
+      font-size: 13px;
+      color: var(--night-fg-3);
+      margin-bottom: 48px;
+    }
+
+    .legal-intro {
+      font-size: 16px;
+      color: var(--night-fg-2);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .legal-caveat {
+      font-size: 15px;
+      color: var(--night-fg-3);
+      line-height: 1.7;
+      margin-bottom: 48px;
+      font-style: italic;
+    }
+
+    .legal h2 {
+      font-family: var(--font-serif);
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -.01em;
+      margin-top: 48px;
+      margin-bottom: 16px;
+      color: var(--night-fg);
+    }
+
+    .legal p {
+      font-size: 16px;
+      color: var(--night-fg-2);
+      line-height: 1.7;
+      margin-bottom: 16px;
+    }
+
+    .legal ul {
+      list-style: none;
+      padding-left: 0;
+      margin-bottom: 16px;
+    }
+
+    .legal ul li {
+      position: relative;
+      padding-left: 20px;
+      font-size: 16px;
+      color: var(--night-fg-2);
+      line-height: 1.7;
+      margin-bottom: 6px;
+    }
+
+    .legal ul li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 11px;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--brand-gold);
+      opacity: .6;
+    }
+
+    .legal a.inline-link {
+      color: var(--brand-gold);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      text-decoration-color: rgba(255,211,105,.35);
+      transition: text-decoration-color .2s;
+    }
+    .legal a.inline-link:hover {
+      text-decoration-color: var(--brand-gold);
+    }
+
+    .legal-closer {
+      margin-top: 64px;
+      padding-top: 48px;
+      border-top: 1px solid var(--night-stroke);
+      text-align: center;
+    }
+
+    .legal-closer p {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 20px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: var(--night-fg-3);
+    }
+
+    .legal-closer .gold { color: var(--brand-gold); }
+
+    footer {
+      padding: 48px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+      border-top: 1px solid var(--night-stroke);
+    }
+    .footer-wordmark {
+      font-family: var(--font-serif);
+      font-weight: 900;
+      font-size: 18px;
+      letter-spacing: -.02em;
+    }
+    .footer-wordmark .now { color: var(--brand-gold); }
+    .footer-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+    .footer-links a {
+      font-size: 13px;
+      color: var(--night-fg-3);
+      transition: color .2s var(--ease-std);
+    }
+    .footer-links a:hover { color: var(--night-fg); }
+    .footer-copy {
+      font-size: 12px;
+      color: var(--night-fg-3);
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 18px 20px; }
+      .legal { padding: 60px 20px 80px; }
+      footer { padding: 40px 20px; flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="site">
+    <div class="grain" aria-hidden="true"></div>
+
+    <nav aria-label="Main navigation">
+      <a href="/" class="nav-wordmark">NOWHERE</a>
+      <a href="/" class="nav-back">&larr; back to home</a>
+    </nav>
+
+    <main class="legal">
+      <p class="legal-label">legal</p>
+      <h1>Terms of Use</h1>
+      <p class="legal-date">Effective February 27, 2026</p>
+
+      <p class="legal-intro">These Terms of Use ("Terms") govern your access to and use of the Nowhere — Now Here mobile application and related services (collectively, the "Service") provided by Konstantin Pudan ("we," "us," "our"). By using the Service, you agree to these Terms.</p>
+      <p class="legal-caveat">If you do not agree, do not use the Service.</p>
+
+      <h2>1. Eligibility</h2>
+      <p>You must be at least 13 years old (or the minimum age required in your country) to use the Service. If you are under the age of majority, you must have permission from a parent or legal guardian.</p>
+
+      <h2>2. License and App Store Terms</h2>
+      <p>We grant you a limited, non-exclusive, non-transferable, revocable license to use the app for personal, non-commercial use, subject to these Terms.</p>
+      <p>If you downloaded the app from Apple's App Store, your use is also subject to Apple's terms, including the Licensed Application End User License Agreement (EULA).</p>
+
+      <h2>3. Health and Wellness Disclaimer</h2>
+      <p>Nowhere is a lifestyle and wellness app. It is not medical software and does not provide medical advice, diagnosis, or treatment. Always seek qualified professional advice for medical concerns.</p>
+
+      <h2>4. Permissions and Device Features</h2>
+      <p>Some features require system permissions and Apple frameworks (such as HealthKit, Family Controls, Device Activity, and notifications). If you deny or revoke permissions, parts of the Service may not function properly.</p>
+
+      <h2>5. User Responsibilities</h2>
+      <p>You agree to:</p>
+      <ul>
+        <li>Provide accurate information when contacting support or creating an account.</li>
+        <li>Use the Service lawfully.</li>
+        <li>Not attempt to reverse engineer, abuse, disrupt, or interfere with the Service.</li>
+        <li>Not use the Service to violate third-party rights.</li>
+      </ul>
+
+      <h2>6. Accounts (if applicable)</h2>
+      <p>If account features are available, you are responsible for maintaining account confidentiality and for activity under your account. Notify us promptly of unauthorized use.</p>
+
+      <h2>7. Subscriptions and Purchases (if applicable)</h2>
+      <p>If paid features are offered:</p>
+      <ul>
+        <li>Pricing and billing terms are shown before purchase.</li>
+        <li>Payments are processed by Apple through your App Store account.</li>
+        <li>Cancellations and refunds are handled according to Apple's policies.</li>
+      </ul>
+
+      <h2>8. Intellectual Property</h2>
+      <p>The Service, including software, design, branding, text, graphics, and content (excluding your lawful user content), is owned by us or our licensors and protected by applicable intellectual property laws.</p>
+
+      <h2>9. Feedback</h2>
+      <p>If you submit suggestions or feedback, you grant us a worldwide, royalty-free, perpetual right to use and incorporate that feedback without compensation to you.</p>
+
+      <h2>10. Third-Party Services</h2>
+      <p>The Service may rely on third-party services (for example, hosting, analytics, or authentication providers). We are not responsible for third-party services outside our control.</p>
+
+      <h2>11. Privacy</h2>
+      <p>Your use of the Service is also governed by our <a href="privacy.html" class="inline-link">Privacy Policy</a>.</p>
+
+      <h2>12. Termination</h2>
+      <p>We may suspend or terminate access to the Service if you violate these Terms or if required for legal, security, or operational reasons. You may stop using the Service at any time.</p>
+
+      <h2>13. Disclaimer of Warranties</h2>
+      <p>The Service is provided "as is" and "as available," without warranties of any kind, express or implied, including merchantability, fitness for a particular purpose, and non-infringement, to the fullest extent permitted by law.</p>
+
+      <h2>14. Limitation of Liability</h2>
+      <p>To the fullest extent permitted by law, we will not be liable for indirect, incidental, special, consequential, or punitive damages, or loss of data, profits, or goodwill arising from your use of the Service. Our total liability will not exceed the amount you paid (if any) for the Service in the 12 months before the claim.</p>
+
+      <h2>15. Indemnity</h2>
+      <p>You agree to indemnify and hold harmless Konstantin Pudan from claims, liabilities, damages, and expenses (including reasonable legal fees) arising from your misuse of the Service or violation of these Terms.</p>
+
+      <h2>16. Governing Law</h2>
+      <p>These Terms are governed by the laws of Serbia without regard to conflict-of-law rules. Courts located in Belgrade will have exclusive jurisdiction, unless applicable law requires otherwise.</p>
+
+      <h2>17. Changes to These Terms</h2>
+      <p>We may update these Terms from time to time. If we make material changes, we will update the effective date and, where appropriate, provide additional notice.</p>
+
+      <h2>18. Contact</h2>
+      <p>For questions about these Terms, contact us at <a href="mailto:hello@itsnowhere.net" class="inline-link">hello@itsnowhere.net</a>.</p>
+
+      <div class="legal-closer">
+        <p>NO<span class="gold">W</span>HERE &rarr; NO<span class="gold">W</span> HERE</p>
+      </div>
+    </main>
+
+    <footer>
+      <a href="/" class="footer-wordmark">No<span class="now">w</span>here</a>
+      <ul class="footer-links">
+        <li><a href="mailto:hello@itsnowhere.net">hello@itsnowhere.net</a></li>
+        <li><a href="privacy.html">privacy</a></li>
+        <li><a href="terms.html">terms</a></li>
+      </ul>
+      <p class="footer-copy">&copy; <span id="copy-year">2026</span> itsnowhere.net</p>
+    </footer>
+  </div>
+
+  <script>
+    const y = document.getElementById('copy-year');
+    if (y) y.textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
