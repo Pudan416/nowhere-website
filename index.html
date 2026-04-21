@@ -1057,6 +1057,67 @@
       .tariffs { flex-direction: column; }
     }
 
+    /* ── Sticky energy bar ─────────────────────────────────── */
+    #sticky-energy {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 300;
+      background: rgba(0,18,36,0.82);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid rgba(255,255,255,0.07);
+      padding: 0.7rem 1.5rem;
+      transform: translateY(-110%);
+      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+    }
+    #sticky-energy.sticky-visible { transform: translateY(0); }
+    .sticky-energy-inner {
+      max-width: 880px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .sticky-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+      white-space: nowrap;
+    }
+    .sticky-track {
+      flex: 1;
+      height: 5px;
+      background: rgba(255,255,255,0.09);
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+    }
+    .sticky-track-fill {
+      position: absolute;
+      left: 0; top: 0; height: 100%;
+      border-radius: 3px;
+      background: var(--bright, #FFBF65);
+      width: 0%;
+      transition: width 0.55s ease;
+    }
+    .sticky-track-drain {
+      position: absolute;
+      right: 0; top: 0; height: 100%;
+      background: rgba(0,0,0,0.6);
+      width: 100%;
+      transition: width 0.55s ease;
+    }
+    .sticky-num {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: rgba(255,255,255,0.65);
+      min-width: 3ch;
+      text-align: right;
+    }
+
     /* ── Reduced motion ───────────────────────────────────── */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after {
@@ -1072,6 +1133,17 @@
 
 <body>
   <canvas id="canvas-bg"></canvas>
+
+  <div id="sticky-energy" aria-hidden="true">
+    <div class="sticky-energy-inner">
+      <span class="sticky-label">TODAY · <span id="sticky-earned-lbl">0</span>/100</span>
+      <div class="sticky-track">
+        <div class="sticky-track-fill" id="sticky-track-fill"></div>
+        <div class="sticky-track-drain" id="sticky-track-drain"></div>
+      </div>
+      <span class="sticky-num" id="sticky-num">0</span>
+    </div>
+  </div>
 
   <div class="site">
     <div class="grain" aria-hidden="true"></div>
@@ -1756,7 +1828,9 @@
     let totalSpent   = 0;
 
     /* ── Tariff pill tap ────────────────────────────────────── */
-    let totalUnlockedMins = 0;
+    let totalUnlockedMins  = 0;
+    let tariffUnlockCount  = 0;
+    const TARIFF_CARD_COUNT = 3;
 
     document.querySelectorAll('.tariff-pill').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1775,20 +1849,33 @@
         });
 
         totalUnlockedMins += mins;
-        // 3 cards × 60 min = 180 min → fully desaturated
         canvasSaturation = Math.max(0, 1 - totalUnlockedMins / 180);
+
+        // drain energy bar: each card costs 1/3; last card drains remainder
+        tariffUnlockCount++;
+        if (tariffUnlockCount >= TARIFF_CARD_COUNT) {
+          totalSpent = colorEarned;
+        } else {
+          totalSpent = Math.min(colorEarned, totalSpent + Math.round(colorEarned / TARIFF_CARD_COUNT));
+        }
+        colorBalance = Math.max(0, colorEarned - totalSpent);
+        syncBalanceUI();
       });
     });
 
     function syncBalanceUI() {
-      document.getElementById('bal-current').textContent = colorEarned;
+      // Big number shows remaining balance (drains as you spend)
+      document.getElementById('bal-current').textContent = colorBalance;
       document.getElementById('bal-earned').textContent  = colorEarned;
-      document.getElementById('bal-bar').style.width     = (colorEarned) + '%';
+      // Bar fill drains: width = balance %
+      document.getElementById('bal-bar').style.width = colorBalance + '%';
 
       const spentBar = document.getElementById('bal-bar-spent');
       if (totalSpent > 0) {
-        spentBar.style.left = colorBalance + '%';
+        spentBar.style.left  = colorBalance + '%';
         spentBar.style.width = totalSpent + '%';
+      } else {
+        spentBar.style.width = '0%';
       }
 
       document.querySelectorAll('.chip-val').forEach(el => {
@@ -1796,7 +1883,47 @@
         if (key && sourceState[key] !== undefined) el.textContent = sourceState[key];
       });
 
+      updateStickyBar();
     }
+
+    /* ── Sticky energy bar ─────────────────────────────────── */
+    function updateStickyBar() {
+      const earnedLbl  = document.getElementById('sticky-earned-lbl');
+      const trackFill  = document.getElementById('sticky-track-fill');
+      const trackDrain = document.getElementById('sticky-track-drain');
+      const num        = document.getElementById('sticky-num');
+      if (!earnedLbl) return;
+      earnedLbl.textContent = colorEarned;
+      if (num) num.textContent = colorBalance;
+      if (trackFill)  trackFill.style.width  = colorEarned + '%';
+      // drain overlay grows from right: its width = totalSpent %
+      if (trackDrain) trackDrain.style.width = totalSpent + '%';
+    }
+
+    (function initStickyObservers() {
+      const bar      = document.getElementById('sticky-energy');
+      const earnEl   = document.querySelector('.balance-demo');
+      const spendEl  = document.getElementById('spend');
+      if (!bar || !earnEl || !spendEl) return;
+
+      let aboveEarn  = false;  // balance-demo has scrolled above viewport
+      let pastSpend  = false;  // spend section has fully scrolled above viewport
+
+      function refreshSticky() {
+        bar.classList.toggle('sticky-visible', aboveEarn && !pastSpend);
+      }
+
+      new IntersectionObserver(([e]) => {
+        aboveEarn = !e.isIntersecting && e.boundingClientRect.top < 0;
+        refreshSticky();
+      }, { threshold: 0 }).observe(earnEl);
+
+      new IntersectionObserver(([e]) => {
+        pastSpend = !e.isIntersecting && e.boundingClientRect.top < 0;
+        refreshSticky();
+      }, { threshold: 0 }).observe(spendEl);
+    })();
+
 
     /* ── Wordmark split on scroll ──────────────────────────── */
     const wordmark = document.getElementById('wordmark');
