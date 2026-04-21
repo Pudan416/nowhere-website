@@ -1057,65 +1057,16 @@
       .tariffs { flex-direction: column; }
     }
 
-    /* ── Sticky energy bar ─────────────────────────────────── */
-    #sticky-energy {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 300;
-      background: rgba(0,18,36,0.82);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(255,255,255,0.07);
-      padding: 0.7rem 1.5rem;
-      transform: translateY(-110%);
-      transition: transform 0.35s cubic-bezier(.4,0,.2,1);
-      pointer-events: none;
-    }
-    #sticky-energy.sticky-visible { transform: translateY(0); }
-    .sticky-energy-inner {
-      max-width: 880px;
-      margin: 0 auto;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-    .sticky-label {
-      font-size: 0.62rem;
-      font-weight: 700;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
-      white-space: nowrap;
-    }
-    .sticky-track {
-      flex: 1;
-      height: 5px;
-      background: rgba(255,255,255,0.09);
-      border-radius: 3px;
-      position: relative;
-      overflow: hidden;
-    }
-    .sticky-track-fill {
-      position: absolute;
-      left: 0; top: 0; height: 100%;
-      border-radius: 3px;
-      background: var(--bright, #FFBF65);
-      width: 0%;
-      transition: width 0.55s ease;
-    }
-    .sticky-track-drain {
-      position: absolute;
-      right: 0; top: 0; height: 100%;
-      background: rgba(0,0,0,0.6);
-      width: 100%;
-      transition: width 0.55s ease;
-    }
-    .sticky-num {
-      font-size: 0.82rem;
-      font-weight: 700;
-      color: rgba(255,255,255,0.65);
-      min-width: 3ch;
-      text-align: right;
+    /* ── Pinned balance card ───────────────────────────────── */
+    .balance-card--pinned {
+      position: fixed !important;
+      top: var(--balance-pin-top, 64px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(860px, calc(100vw - 2rem));
+      z-index: 200;
+      box-shadow: 0 12px 40px rgba(0,0,0,0.45);
+      transition: box-shadow 0.2s;
     }
 
     /* ── Reduced motion ───────────────────────────────────── */
@@ -1133,17 +1084,6 @@
 
 <body>
   <canvas id="canvas-bg"></canvas>
-
-  <div id="sticky-energy" aria-hidden="true">
-    <div class="sticky-energy-inner">
-      <span class="sticky-label">TODAY · <span id="sticky-earned-lbl">0</span>/100</span>
-      <div class="sticky-track">
-        <div class="sticky-track-fill" id="sticky-track-fill"></div>
-        <div class="sticky-track-drain" id="sticky-track-drain"></div>
-      </div>
-      <span class="sticky-num" id="sticky-num">0</span>
-    </div>
-  </div>
 
   <div class="site">
     <div class="grain" aria-hidden="true"></div>
@@ -1882,46 +1822,45 @@
         const key = el.dataset.chip;
         if (key && sourceState[key] !== undefined) el.textContent = sourceState[key];
       });
-
-      updateStickyBar();
     }
 
-    /* ── Sticky energy bar ─────────────────────────────────── */
-    function updateStickyBar() {
-      const earnedLbl  = document.getElementById('sticky-earned-lbl');
-      const trackFill  = document.getElementById('sticky-track-fill');
-      const trackDrain = document.getElementById('sticky-track-drain');
-      const num        = document.getElementById('sticky-num');
-      if (!earnedLbl) return;
-      earnedLbl.textContent = colorEarned;
-      if (num) num.textContent = colorBalance;
-      if (trackFill)  trackFill.style.width  = colorEarned + '%';
-      // drain overlay grows from right: its width = totalSpent %
-      if (trackDrain) trackDrain.style.width = totalSpent + '%';
-    }
+    /* ── Sticky balance card ───────────────────────────────── */
+    (function initStickyBalance() {
+      const card  = document.querySelector('.balance-card');
+      const demo  = document.querySelector('.balance-demo');
+      const spend = document.getElementById('spend');
+      const nav   = document.querySelector('nav');
+      if (!card || !demo || !spend) return;
 
-    (function initStickyObservers() {
-      const bar      = document.getElementById('sticky-energy');
-      const earnEl   = document.querySelector('.balance-demo');
-      const spendEl  = document.getElementById('spend');
-      if (!bar || !earnEl || !spendEl) return;
+      let pinned  = false;
+      let spacer  = null;
 
-      let aboveEarn  = false;  // balance-demo has scrolled above viewport
-      let pastSpend  = false;  // spend section has fully scrolled above viewport
+      function navH() { return nav ? nav.offsetHeight : 64; }
 
-      function refreshSticky() {
-        bar.classList.toggle('sticky-visible', aboveEarn && !pastSpend);
+      function pin() {
+        if (pinned) return;
+        pinned = true;
+        spacer = document.createElement('div');
+        spacer.style.height = card.offsetHeight + 'px';
+        demo.insertBefore(spacer, card);
+        card.style.setProperty('--balance-pin-top', navH() + 'px');
+        card.classList.add('balance-card--pinned');
       }
 
-      new IntersectionObserver(([e]) => {
-        aboveEarn = !e.isIntersecting && e.boundingClientRect.top < 0;
-        refreshSticky();
-      }, { threshold: 0 }).observe(earnEl);
+      function unpin() {
+        if (!pinned) return;
+        pinned = false;
+        card.classList.remove('balance-card--pinned');
+        card.style.removeProperty('--balance-pin-top');
+        if (spacer) { spacer.remove(); spacer = null; }
+      }
 
-      new IntersectionObserver(([e]) => {
-        pastSpend = !e.isIntersecting && e.boundingClientRect.top < 0;
-        refreshSticky();
-      }, { threshold: 0 }).observe(spendEl);
+      window.addEventListener('scroll', () => {
+        const h           = navH();
+        const demoTop     = demo.getBoundingClientRect().top;
+        const spendBottom = spend.getBoundingClientRect().bottom;
+        if (demoTop < h && spendBottom > h) pin(); else unpin();
+      }, { passive: true });
     })();
 
 
