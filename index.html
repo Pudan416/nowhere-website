@@ -2,7 +2,7 @@
 <html lang="en" data-theme="night">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Nowhere — earn your time</title>
   <meta name="description" content="A screen-time resistance app for iOS. Convert real-world activity into colors. Spend colors to unlock your feeds. You cannot buy them.">
   <meta name="theme-color" content="#222831">
@@ -66,6 +66,8 @@
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
       overflow-x: hidden;
+      -webkit-text-size-adjust: 100%;
+      -webkit-overflow-scrolling: touch;
     }
 
     a { color: inherit; text-decoration: none; }
@@ -101,7 +103,7 @@
       padding: 24px 48px;
       position: sticky;
       top: 0;
-      z-index: 10;
+      z-index: 12;
       background: var(--nav-bg, rgba(34,40,49,.6));
       backdrop-filter: blur(20px) saturate(1.4);
       -webkit-backdrop-filter: blur(20px) saturate(1.4);
@@ -372,6 +374,8 @@
       gap: 12px;
       align-items: center;
       width: 100%;
+      max-width: 580px;
+      margin: 0 auto;
     }
     .sources-row {
       display: flex;
@@ -379,118 +383,162 @@
       justify-content: center;
       width: 100%;
     }
-    .sources-row--top .source-card  { flex: 0 1 380px; }
-    .sources-row--bottom .source-card { flex: 0 1 248px; }
+    .sources-row--top .source-card  { flex: 1 1 0; }
+    .sources-row--bottom .source-card { flex: 1 1 0; }
 
     .source-card {
-      background: var(--card-bg, rgba(26,26,26,0.55));
-      backdrop-filter: blur(20px) saturate(1.2);
-      -webkit-backdrop-filter: blur(20px) saturate(1.2);
-      border: 1px solid var(--night-stroke);
-      transition: background 1.4s ease, border-color 1.4s ease, transform .2s var(--ease-std);
-      border-radius: 16px;
-      padding: 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,211,105,.12);
+      border-bottom: 3px solid rgba(255,211,105,.15);
+      border-radius: 14px;
+      padding: 16px 14px;
       min-width: 0;
       cursor: pointer;
-      transition: transform .2s var(--ease-std), border-color .2s var(--ease-std);
+      transition: transform .12s var(--ease-std), background .15s var(--ease-std), border-color .15s var(--ease-std);
       user-select: none;
+      overflow: hidden;
+      -webkit-tap-highlight-color: transparent;
+      animation: sourcePulse 1.8s ease-in-out infinite;
     }
-    .source-preview {
-      height: 110px;
-      border-radius: 12px;
+    .source-top {
       display: flex;
       align-items: center;
-      justify-content: center;
-      margin-bottom: 16px;
-      overflow: hidden;
+      gap: 7px;
       position: relative;
+      z-index: 1;
     }
-    .source-preview--steps {
-      background: radial-gradient(circle at 50% 65%, #FFBF65 0%, rgba(255,191,101,.35) 45%, transparent 72%);
+    .source-desc {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      font-weight: 400;
+      color: rgba(242,242,242,.40);
+      line-height: 1.35;
+      text-align: center;
+      position: relative;
+      z-index: 1;
     }
-    .source-preview--sleep {
-      background: radial-gradient(circle at 50% 38%, #003A6C 0%, #002646 55%, #0d1520 100%);
+
+    @keyframes sourcePulse {
+      0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255,211,105,0), 0 0 0 0 rgba(255,211,105,0);
+        border-color: rgba(255,211,105,.12);
+      }
+      50% {
+        box-shadow: 0 0 24px 4px rgba(255,211,105,.28), 0 0 60px 10px rgba(255,211,105,.08);
+        border-color: rgba(255,211,105,.35);
+      }
     }
-    .source-preview--body {
-      background: rgba(140,110,130,.06);
+    .source-card--tapped {
+      animation: none;
+      border-color: rgba(255,255,255,.10);
     }
-    .source-preview--mind {
-      background: rgba(196,181,253,.05);
+
+    .source-progress {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0%;
+      background: var(--brand-gold);
+      border-radius: 14px 0 0 14px;
+      transition: width .4s var(--ease-std);
+      z-index: 0;
     }
-    .source-preview--heart {
-      background: radial-gradient(circle at 50% 55%, rgba(253,137,115,.22) 0%, transparent 68%);
-    }
-    .source-asset {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      mix-blend-mode: screen;
+    .source-card--full .source-progress { border-radius: 14px; }
+
+    .source-icon {
+      font-size: 20px;
+      line-height: 1;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 1;
     }
     .source-name {
       font-family: var(--font-ui);
-      font-weight: 600;
-      font-size: 18px;
-      letter-spacing: -.005em;
-      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 15px;
+      letter-spacing: -.01em;
       color: var(--night-fg);
+      position: relative;
+      z-index: 1;
     }
-    .source-desc {
-      font-size: 14px;
-      color: var(--night-fg-3);
-      line-height: 1.55;
+
+    .source-card:hover {
+      animation: none;
+      transform: translateY(-3px);
+      background: rgba(255,255,255,.11);
+      border-color: rgba(255,211,105,.30);
+      border-bottom-color: rgba(255,211,105,.35);
+      box-shadow: 0 6px 20px rgba(0,0,0,.20), 0 0 0 1px rgba(255,211,105,.08);
     }
-    .source-max {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      letter-spacing: .08em;
-      color: rgba(242,242,242,.35);
-      margin-top: 14px;
-      font-variant-numeric: tabular-nums;
+    .source-card:active {
+      transform: translateY(1px);
+      box-shadow: 0 1px 4px rgba(0,0,0,.15);
+      border-bottom-width: 1px;
+      padding-bottom: 18px;
     }
-    .source-max-bar {
-      height: 4px;
-      background: rgba(255,255,255,.08);
-      border-radius: 9999px;
-      overflow: hidden;
-      margin-top: 7px;
-    }
-    .source-max-fill {
-      height: 100%;
+
+    .source-card--full {
+      animation: none;
       background: var(--brand-gold);
-      border-radius: 9999px;
-      width: 0%;
-      transition: width .45s var(--ease-std);
+      border-color: rgba(200,160,40,.30);
+      border-bottom-color: rgba(180,140,20,.35);
     }
-    .source-card:hover { transform: translateY(-3px); border-color: rgba(255,211,105,.25); }
-    .source-card:active { transform: scale(.97); }
-    .source-card--full { cursor: default; }
-    .source-card--full:hover { transform: none; border-color: rgba(64,64,64,1); }
-    .source-card--full:active { transform: none; }
-    .source-tap-hint {
-      font-size: 12px;
-      font-family: var(--font-ui);
-      font-weight: 500;
-      color: rgba(242,242,242,.22);
-      margin-top: 8px;
-      letter-spacing: .06em;
-      text-transform: lowercase;
-      transition: color .2s;
+    .source-card--full .source-name { color: #000; font-weight: 800; }
+    .source-card--full .source-desc { color: rgba(0,0,0,.40); }
+    .source-card--full .source-progress { background: transparent; }
+    .source-card--full:hover {
+      transform: none;
+      box-shadow: none;
+      cursor: default;
+      background: var(--brand-gold);
+      border-color: rgba(200,160,40,.30);
+      border-bottom-color: rgba(180,140,20,.35);
+      border-bottom-width: 3px;
+      padding-bottom: 16px;
     }
-    .source-card:hover .source-tap-hint { color: rgba(242,242,242,.45); }
-    .source-card--full .source-tap-hint { color: rgba(242,242,242,.10); }
+    .source-card--full:active { transform: none; padding-bottom: 16px; border-bottom-width: 3px; }
+
+    /* ── Balance sticky region ─────────────────────────────── */
+    .balance-sticky-region {
+      position: relative;
+    }
 
     /* ── Interactive balance card ─────────────────────────── */
     .balance-demo {
-      margin-bottom: 40px;
+      padding: 120px 24px 40px;
+      max-width: 1100px;
+      margin: 0 auto;
     }
     .balance-card {
       background: var(--card-bg, rgba(26,26,26,0.55));
       backdrop-filter: blur(20px) saturate(1.2);
       -webkit-backdrop-filter: blur(20px) saturate(1.2);
       border: 1px solid var(--night-stroke);
-      transition: background 1.4s ease, border-color 1.4s ease;
+      transition: background 1.4s ease, border-color 1.4s ease, box-shadow .3s ease;
       border-radius: 16px;
       overflow: hidden;
+    }
+    .balance-card--fixed {
+      position: fixed;
+      top: var(--pin-top, 73px);
+      left: var(--pin-left, 0px);
+      width: var(--pin-width);
+      z-index: 9;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    }
+    .balance-card--bottomed {
+      position: absolute;
+      top: var(--park-top, 0px);
+      left: var(--pin-left-abs, 0px);
+      width: var(--pin-width);
+      z-index: 9;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
     }
     .balance-top {
       display: flex;
@@ -584,7 +632,7 @@
     @media (max-width: 680px) {
       .sources-row { flex-wrap: wrap; }
       .sources-row--top .source-card,
-      .sources-row--bottom .source-card { flex: 1 1 calc(50% - 6px); min-width: 140px; }
+      .sources-row--bottom .source-card { flex: 1 1 calc(50% - 6px); min-width: 130px; }
     }
 
     /* ── Tariffs ──────────────────────────────────────────── */
@@ -673,37 +721,110 @@
       font-size: 16px;
       font-weight: 500;
       color: #000;
+      text-align: left;
     }
 
     .tariff-pill-row {
       display: flex;
       gap: 5px;
       flex-wrap: nowrap;
+      position: relative;
     }
 
     .tariff-pill {
       display: inline-flex;
       align-items: center;
-      border: 0.5px solid rgb(0 0 0 / 0.1);
+      gap: 5px;
+      border: 1.5px solid rgb(0 0 0 / 0.08);
       border-radius: 9999px;
-      padding: 5px 10px;
+      padding: 6px 14px 6px 10px;
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
       font-variant-numeric: tabular-nums;
       background: rgb(255 211 105);
       color: #000;
       cursor: pointer;
-      transition: opacity .15s ease;
+      transition: transform .18s var(--ease-std), box-shadow .18s var(--ease-std), background .18s ease;
       -webkit-appearance: none;
       appearance: none;
       white-space: nowrap;
+      position: relative;
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+      overflow: visible;
     }
-    .tariff-pill:hover { opacity: .8; }
+    .tariff-pill::before {
+      content: '▶';
+      font-size: 8px;
+      opacity: .45;
+      line-height: 1;
+    }
+    .tariff-pill:hover {
+      transform: translateY(-2px) scale(1.04);
+      box-shadow: 0 4px 14px rgba(255,191,101,.30);
+      background: rgb(255,200,80);
+    }
+    .tariff-pill:active {
+      transform: scale(.96);
+      box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    }
     .tariff-pill--dim {
       background: rgb(255 211 105 / 0.25);
       color: rgb(0 0 0 / 0.55);
       cursor: not-allowed;
       pointer-events: none;
+      box-shadow: none;
+      border-color: transparent;
+    }
+    .tariff-pill--dim::before { display: none; }
+
+    /* ── Pill attention sequence ──────────────────────────── */
+    @keyframes pill-nudge {
+      0%   { transform: translateY(0) scale(1); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+      20%  { transform: translateY(-3px) scale(1.07); box-shadow: 0 6px 20px rgba(255,191,101,.45); }
+      40%  { transform: translateY(0) scale(1); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+      100% { transform: translateY(0) scale(1); }
+    }
+    @keyframes pill-glow {
+      0%   { background-position: -200% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .tariff-pill--hint {
+      background-image: linear-gradient(
+        90deg,
+        rgb(255 211 105) 0%,
+        rgb(255 235 170) 40%,
+        rgb(255 255 230) 50%,
+        rgb(255 235 170) 60%,
+        rgb(255 211 105) 100%
+      );
+      background-size: 200% 100%;
+      animation: pill-nudge 1.6s var(--ease-std) infinite,
+                 pill-glow 2.4s ease-in-out infinite;
+    }
+
+    .tariff--unlocked .tariff-pill--hint {
+      animation: none;
+      background-image: none;
+    }
+
+    .tariff-hint-label {
+      position: absolute;
+      bottom: -22px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      color: rgba(0,0,0,.45);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .3s ease;
+      pointer-events: none;
+    }
+    .tariff-pill--hint .tariff-hint-label {
+      opacity: 1;
     }
 
     .tariff-progress {
@@ -995,10 +1116,10 @@
     .footer-wordmark {
       font-family: var(--font-serif);
       font-weight: 900;
-      font-size: 18px;
-      letter-spacing: -.02em;
+      font-size: 20px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
     }
-    .footer-wordmark .now { color: var(--brand-gold); }
 
     .footer-links {
       display: flex;
@@ -1040,33 +1161,365 @@
       border: none;
       color: var(--night-fg);
       cursor: pointer;
-      padding: 4px;
+      padding: 8px;
       -webkit-tap-highlight-color: transparent;
+      z-index: 12;
+    }
+    .nav-toggle svg { display: block; }
+
+    .nav-drawer {
+      display: none;
     }
 
-    /* ── Responsive ───────────────────────────────────────── */
+    /* ── Responsive ── tablet & mobile ─────────────────────── */
     @media (max-width: 768px) {
-      nav { padding: 18px 20px; }
+      nav {
+        padding: 14px 16px;
+        gap: 0;
+      }
+      .nav-links { display: none; }
+      .nav-cta   { display: none; }
+      .nav-toggle { display: block; }
 
-      section { padding: 80px 20px; }
-      .editorial { padding: 80px 20px; }
-      .cta-strip { padding: 80px 20px; }
-      footer { padding: 40px 20px; flex-direction: column; align-items: flex-start; }
+      .nav-drawer {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 11;
+        background: var(--nav-bg, rgba(34,40,49,.95));
+        backdrop-filter: blur(24px) saturate(1.4);
+        -webkit-backdrop-filter: blur(24px) saturate(1.4);
+        border-bottom: 1px solid var(--night-stroke);
+        padding: 72px 24px 28px;
+        flex-direction: column;
+        gap: 8px;
+        transform: translateY(-100%);
+        transition: transform .35s var(--ease-std);
+      }
+      .nav-drawer.open {
+        display: flex;
+        transform: translateY(0);
+      }
+      .nav-drawer a {
+        display: block;
+        padding: 14px 0;
+        font-size: 17px;
+        color: var(--night-fg-2);
+        border-bottom: 1px solid rgba(255,255,255,.06);
+        transition: color .2s;
+      }
+      .nav-drawer a:last-child { border-bottom: none; }
+      .nav-drawer a:active { color: var(--brand-gold); }
+      .nav-drawer .drawer-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 8px;
+        background: var(--brand-gold);
+        color: #141414;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 14px 24px;
+        border-radius: 9999px;
+        text-align: center;
+        border: none;
+      }
 
-      .tariffs { flex-direction: column; }
+      /* Hero */
+      .hero {
+        min-height: 92svh;
+        padding: 60px 20px 48px;
+      }
+      .hero-eyebrow {
+        font-size: 11px;
+        letter-spacing: .12em;
+        margin-bottom: 20px;
+      }
+      .hero-wordmark {
+        font-size: clamp(48px, 14vw, 180px);
+      }
+      .wm-ray {
+        width: clamp(36px, 8vw, 140px);
+        margin-top: calc(-0.35em);
+      }
+      .hero-wordmark.split .wm-sep {
+        max-width: 80px;
+      }
+      .hero-tagline {
+        font-size: clamp(17px, 4.5vw, 28px);
+        margin-top: 20px;
+        max-width: 320px;
+      }
+      .hero-actions {
+        margin-top: 32px;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        max-width: 300px;
+      }
+      .hero-actions .btn-primary,
+      .hero-actions .btn-ghost {
+        width: 100%;
+        justify-content: center;
+        padding: 16px 24px;
+        font-size: 15px;
+      }
+
+      /* Sections */
+      section {
+        padding: 64px 16px;
+      }
+      .section-heading {
+        font-size: clamp(26px, 6vw, 48px);
+      }
+      .section-desc {
+        font-size: 15px;
+        margin-bottom: 32px;
+      }
+
+      /* How it works */
+      .how { max-width: 100%; }
+      .how-line {
+        font-size: clamp(16px, 4vw, 24px);
+        grid-template-columns: 26px auto 1fr;
+        gap: 0 10px;
+      }
+      .how-step {
+        width: 26px;
+        height: 26px;
+        font-size: 12px;
+      }
+
+      /* Balance card & demo */
+      .balance-demo {
+        padding: 64px 16px 24px;
+      }
+      .balance-card { border-radius: 14px; }
+      .balance-chips {
+        flex-wrap: wrap;
+        gap: 4px;
+        padding: 8px 12px 12px;
+      }
+      .balance-chip {
+        font-size: 12px;
+        padding: 5px 8px;
+      }
+      .balance-card-row { padding: 6px 12px 10px; }
+      .balance-big { font-size: 28px; }
+      .balance-bar { margin: 0 12px; }
+      .balance-top { padding: 12px 12px 0; }
+
+      /* Sources */
+      .sources-triangle { max-width: 100%; }
+      .sources-row { flex-wrap: wrap; gap: 10px; }
+      .sources-row--top .source-card,
+      .sources-row--bottom .source-card {
+        flex: 1 1 calc(50% - 5px);
+        min-width: 0;
+      }
+      .source-card {
+        padding: 14px 10px;
+        border-radius: 12px;
+        min-height: 44px;
+      }
+      .source-name { font-size: 14px; }
+      .source-desc { font-size: 11px; }
+      .source-icon { font-size: 18px; }
+
+      /* Tariffs */
+      .tariffs {
+        flex-direction: column;
+        max-width: 100%;
+        gap: 8px;
+      }
+      .tariff {
+        min-height: 72px;
+        border-radius: 36px;
+      }
+      .tariff-well {
+        flex: 0 0 38px;
+        width: 38px;
+        height: 38px;
+        margin-left: 12px;
+        border-radius: 12px;
+      }
+      .tariff-well img {
+        width: 38px;
+        height: 38px;
+      }
+      .tariff-body {
+        padding: 10px 4px 10px 10px;
+        gap: 5px;
+      }
+      .tariff-name { font-size: 14px; }
+      .tariff-pill {
+        font-size: 12px;
+        padding: 5px 10px 5px 8px;
+      }
+      .tariff-pill::before { font-size: 7px; }
+      .tariff-menu { flex: 0 0 32px; font-size: 14px; }
+
+      /* Feeds */
+      .feeds-strip { margin-top: 24px; }
+      .feeds-icons {
+        grid-template-columns: repeat(5, 36px);
+        gap: 8px;
+      }
+      .feed-icon, .feed-icon--more {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+      }
+      .feeds-caption {
+        font-size: 13px;
+        padding: 0 8px;
+      }
+
+      /* Mockups */
+      .mockups {
+        grid-template-columns: 1fr;
+        gap: 32px;
+        width: 100%;
+      }
+      .mockup-frame {
+        max-width: 280px;
+        margin: 0 auto;
+      }
+
+      /* Editorial */
+      .editorial { padding: 64px 20px; }
+      .editorial-quote {
+        font-size: clamp(20px, 5vw, 42px);
+      }
+
+      /* CTA */
+      .cta-strip { padding: 64px 20px; }
+      .app-icon-wrap {
+        width: 96px;
+        height: 96px;
+        margin-bottom: 32px;
+      }
+      .app-icon {
+        width: 96px;
+        height: 96px;
+        border-radius: 22px;
+      }
+      .cta-heading {
+        font-size: clamp(32px, 10vw, 72px);
+      }
+      .cta-actions .btn-primary {
+        padding: 16px 28px;
+        font-size: 15px;
+      }
+
+      /* Footer */
+      footer {
+        padding: 32px 16px;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 12px;
+      }
+      .footer-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 16px;
+      }
+      .footer-links a { font-size: 14px; }
+      .footer-copy { font-size: 13px; }
+
+      /* Dividers */
+      .divider { margin: 0 16px; }
+
+      /* Palette picker */
+      .palette-swatch {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+      }
+      .palette-option {
+        gap: 8px;
+        padding: 8px;
+        border-radius: 16px;
+      }
+      .palette-label { font-size: 12px; }
     }
 
-    /* ── Pinned balance card ───────────────────────────────── */
-    .balance-card--pinned {
-      position: fixed !important;
-      top: var(--balance-pin-top, 64px);
-      left: 0 !important;
-      right: 0 !important;
-      margin: 0 auto !important;
-      width: min(860px, calc(100vw - 2rem)) !important;
-      z-index: 200;
-      box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+    /* ── Safe area insets for notch devices ─────────────────── */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      @media (max-width: 768px) {
+        nav {
+          padding-top: max(14px, env(safe-area-inset-top));
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+        }
+        .nav-drawer {
+          padding-top: calc(72px + env(safe-area-inset-top));
+        }
+        footer {
+          padding-bottom: max(32px, env(safe-area-inset-bottom));
+          padding-left: max(16px, env(safe-area-inset-left));
+          padding-right: max(16px, env(safe-area-inset-right));
+        }
+      }
     }
+
+    /* ── Extra small (≤400px) ─────────────────────────────── */
+    @media (max-width: 400px) {
+      .hero-wordmark {
+        font-size: clamp(40px, 13vw, 60px);
+      }
+      .wm-ray {
+        width: clamp(28px, 7vw, 50px);
+      }
+      .hero-wordmark.split .wm-sep {
+        max-width: 50px;
+      }
+      .hero-tagline {
+        font-size: 16px;
+        max-width: 260px;
+      }
+
+      .sources-row--bottom .source-card {
+        flex: 1 1 100%;
+      }
+
+      .balance-chips {
+        gap: 3px;
+        padding: 6px 8px 10px;
+      }
+      .balance-chip {
+        font-size: 11px;
+        padding: 4px 6px;
+      }
+
+      .tariff-pill-row { gap: 3px; }
+      .tariff-pill {
+        font-size: 11px;
+        padding: 4px 8px 4px 6px;
+      }
+
+      .feeds-icons {
+        grid-template-columns: repeat(5, 32px);
+        gap: 6px;
+      }
+      .feed-icon, .feed-icon--more {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+      }
+
+      .palette-swatch {
+        width: 64px;
+        height: 64px;
+      }
+      .palette-picker { gap: 8px; }
+    }
+
+    /* (pinned balance card styles are on .balance-card--fixed / --bottomed) */
 
     /* ── Reduced motion ───────────────────────────────────── */
     @media (prefers-reduced-motion: reduce) {
@@ -1090,9 +1543,20 @@
     <!-- Nav -->
     <nav aria-label="Main navigation">
       <a href="/" class="nav-wordmark">NOWHERE</a>
-      
       <a href="#download" class="nav-cta">get the app</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <svg class="nav-toggle-open" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="17" x2="20" y2="17"/></svg>
+        <svg class="nav-toggle-close" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="display:none"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg>
+      </button>
     </nav>
+
+    <div class="nav-drawer" id="nav-drawer">
+      <a href="#how">how it works</a>
+      <a href="#earn-sources">earn</a>
+      <a href="#spend">spend</a>
+      <a href="#the-app">the app</a>
+      <a href="#download" class="drawer-cta">get the app</a>
+    </div>
 
     <main>
 
@@ -1141,13 +1605,8 @@
     <!-- ════════════════════════════════════════════════════════
          3. EARN — sources + interactive balance
          ════════════════════════════════════════════════════════ -->
-    <section id="earn" style="text-align: center;">
-      <p class="section-label reveal">earn colors</p>
-      <h2 class="section-heading reveal">Five sources. <em>100 colors a day.</em></h2>
-      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">Colors come from five parts of your day. Tap a source to watch it add up.</p>
-
-      <!-- Balance card demo -->
-      <div class="balance-demo reveal">
+    <div class="balance-sticky-region">
+      <div class="balance-demo">
         <div class="balance-card">
           <div class="balance-top">
             <div class="balance-eyebrow">TODAY · <span id="bal-earned">0</span>/100</div>
@@ -1171,56 +1630,54 @@
         </div>
       </div>
 
+    <section id="earn-sources" style="text-align: center; padding-top: 24px;">
+      <p class="section-label reveal">earn colors</p>
+      <h2 class="section-heading reveal">Five sources. <em>100 colors a day.</em></h2>
+      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">Colors come from five parts of your day. Tap a source to watch it add up.</p>
       <div class="sources-triangle reveal">
         <div class="sources-row sources-row--top">
           <div class="source-card" data-source="steps" data-step="20" role="button" tabindex="0" aria-label="Add steps colors">
-            <div class="source-preview source-preview--steps"></div>
-            <p class="source-name">steps</p>
-            <p class="source-desc">walk more, earn more. the canvas warms with every step.</p>
-            <p class="source-max"><span class="source-earned">0</span> / 20</p>
-            <div class="source-max-bar"><div class="source-max-fill"></div></div>
-            <p class="source-tap-hint">tap to add</p>
+            <div class="source-progress"></div>
+            <div class="source-top">
+              <span class="source-icon">👣</span>
+              <span class="source-name">Steps</span>
+            </div>
+            <p class="source-desc">every walk, commute, or stroll adds warmth to the canvas</p>
           </div>
           <div class="source-card" data-source="sleep" data-step="20" role="button" tabindex="0" aria-label="Add sleep colors">
-            <div class="source-preview source-preview--sleep"></div>
-            <p class="source-name">sleep</p>
-            <p class="source-desc">hit your sleep target and the canvas deepens into navy.</p>
-            <p class="source-max"><span class="source-earned">0</span> / 20</p>
-            <div class="source-max-bar"><div class="source-max-fill"></div></div>
-            <p class="source-tap-hint">tap to add</p>
+            <div class="source-progress"></div>
+            <div class="source-top">
+              <span class="source-icon">🛏</span>
+              <span class="source-name">Sleep</span>
+            </div>
+            <p class="source-desc">hit your sleep target — rest is fuel, not downtime</p>
           </div>
         </div>
 
         <div class="sources-row sources-row--bottom">
           <div class="source-card" data-source="body" data-step="5" role="button" tabindex="0" aria-label="Add body colors">
-            <div class="source-preview source-preview--body">
-              <img src="assets/body_preview.png" alt="" aria-hidden="true" class="source-asset">
+            <div class="source-progress"></div>
+            <div class="source-top">
+              <span class="source-icon">🏃</span>
+              <span class="source-name">Body</span>
             </div>
-            <p class="source-name">body</p>
-            <p class="source-desc">workouts, stretching — anything physical.</p>
-            <p class="source-max"><span class="source-earned">0</span> / 20</p>
-            <div class="source-max-bar"><div class="source-max-fill"></div></div>
-            <p class="source-tap-hint">tap to add · max 4×</p>
+            <p class="source-desc">workouts, stretching, yoga, dancing — anything physical</p>
           </div>
           <div class="source-card" data-source="mind" data-step="5" role="button" tabindex="0" aria-label="Add mind colors">
-            <div class="source-preview source-preview--mind">
-              <img src="assets/mind_preview.png" alt="" aria-hidden="true" class="source-asset">
+            <div class="source-progress"></div>
+            <div class="source-top">
+              <span class="source-icon">🧠</span>
+              <span class="source-name">Mind</span>
             </div>
-            <p class="source-name">mind</p>
-            <p class="source-desc">reading, learning, anything that feeds your thinking.</p>
-            <p class="source-max"><span class="source-earned">0</span> / 20</p>
-            <div class="source-max-bar"><div class="source-max-fill"></div></div>
-            <p class="source-tap-hint">tap to add · max 4×</p>
+            <p class="source-desc">reading, learning, journaling, podcasts — feed your thinking</p>
           </div>
           <div class="source-card" data-source="heart" data-step="5" role="button" tabindex="0" aria-label="Add heart colors">
-            <div class="source-preview source-preview--heart">
-              <img src="assets/heart_preview.png" alt="" aria-hidden="true" class="source-asset">
+            <div class="source-progress"></div>
+            <div class="source-top">
+              <span class="source-icon">❤️</span>
+              <span class="source-name">Heart</span>
             </div>
-            <p class="source-name">heart</p>
-            <p class="source-desc">time with people, moments that ground you.</p>
-            <p class="source-max"><span class="source-earned">0</span> / 20</p>
-            <div class="source-max-bar"><div class="source-max-fill"></div></div>
-            <p class="source-tap-hint">tap to add · max 4×</p>
+            <p class="source-desc">time with people, calling your mom, a real conversation</p>
           </div>
         </div>
       </div>
@@ -1244,11 +1701,12 @@
     <!-- ════════════════════════════════════════════════════════
          4. SPEND — tariffs + supported apps
          ════════════════════════════════════════════════════════ -->
+    </div><!-- /.balance-sticky-region -->
+
     <section id="spend" style="text-align: center;">
-      <p class="section-label reveal">spend colors</p>
-      <h2 class="section-heading reveal">Unlock a feed. <em>Lose colors in life.</em></h2>
-      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">Pick a time window, pay in colors. When the timer runs out, the feed closes. Earn more to open it again.</p>
-      <p class="section-hint reveal" style="margin-left: auto; margin-right: auto;">each pill shows duration and its cost in colors.</p>
+      <p class="section-label reveal" id="spend-label">spend colors</p>
+      <h2 class="section-heading reveal">Unlock a feed. <em>Lose colors.</em></h2>
+      <p class="section-desc reveal" style="margin-left: auto; margin-right: auto;">Unlocking apps drains colors from your canvas. Pick a time window, pay in colors — when the timer runs out, the feed closes.</p>
 
       <div class="tariffs reveal">
         <div class="tariff">
@@ -1257,9 +1715,9 @@
           <div class="tariff-body">
             <span class="tariff-name">YouTube</span>
             <div class="tariff-pill-row">
-              <button class="tariff-pill" data-mins="10" data-pct="100">10 min · 4</button>
-              <button class="tariff-pill" data-mins="30" data-pct="100">30 min · 10</button>
-              <button class="tariff-pill" data-mins="60">1 hour · 20</button>
+              <button class="tariff-pill" data-mins="10" data-pct="100">10 min</button>
+              <button class="tariff-pill" data-mins="30" data-pct="100">30 min</button>
+              <button class="tariff-pill" data-mins="60">1 hour</button>
             </div>
             <div class="tariff-progress">
               <div class="tariff-progress-track"><div class="tariff-progress-fill"></div></div>
@@ -1278,9 +1736,9 @@
           <div class="tariff-body">
             <span class="tariff-name">Instagram</span>
             <div class="tariff-pill-row">
-              <button class="tariff-pill" data-mins="10">10 min · 4</button>
-              <button class="tariff-pill" data-mins="30">30 min · 10</button>
-              <button class="tariff-pill" data-mins="60">1 hour · 20</button>
+              <button class="tariff-pill" data-mins="10">10 min</button>
+              <button class="tariff-pill" data-mins="30">30 min</button>
+              <button class="tariff-pill" data-mins="60">1 hour</button>
             </div>
             <div class="tariff-progress">
               <div class="tariff-progress-track"><div class="tariff-progress-fill"></div></div>
@@ -1299,9 +1757,9 @@
           <div class="tariff-body">
             <span class="tariff-name">TikTok</span>
             <div class="tariff-pill-row">
-              <button class="tariff-pill" data-mins="10">10 min · 4</button>
-              <button class="tariff-pill" data-mins="30">30 min · 10</button>
-              <button class="tariff-pill" data-mins="60">1 hour · 20</button>
+              <button class="tariff-pill" data-mins="10">10 min</button>
+              <button class="tariff-pill" data-mins="30">30 min</button>
+              <button class="tariff-pill" data-mins="60">1 hour</button>
             </div>
             <div class="tariff-progress">
               <div class="tariff-progress-track"><div class="tariff-progress-fill"></div></div>
@@ -1670,13 +2128,27 @@
 
     function spawnCanvasElement(type) {
       if (canvasElements.length >= MAX_CANVAS_ELEMENTS) canvasElements.shift();
-      const mg = 0.13;
-      const x  = mg + Math.random() * (1 - 2 * mg);
-      const y  = mg + Math.random() * (1 - 2 * mg);
+
+      const mg = 0.10;
+      const minDist = 0.22;
+      let x, y, attempts = 0;
+      do {
+        x = mg + Math.random() * (1 - 2 * mg);
+        y = mg + Math.random() * (1 - 2 * mg);
+        attempts++;
+      } while (
+        attempts < 30 &&
+        canvasElements.some(el => {
+          const dx = el.x - x, dy = el.y - y;
+          return Math.sqrt(dx * dx + dy * dy) < minDist;
+        })
+      );
+
       const phase      = Math.random() * Math.PI * 2;
       const driftSpeed = 0.08 + Math.random() * 0.12;
 
       let size, opacity, img, hue, blobSeed, blobColor, blobComplexity;
+      let mindDrift = null;
       if (type === 'body') {
         size           = 0.30 + Math.random() * 0.20;
         opacity        = 0.55 + Math.random() * 0.30;
@@ -1689,12 +2161,22 @@
         size    = 0.10 + Math.random() * 0.08;
         opacity = 0.50 + Math.random() * 0.25;
         img     = mindImgs[Math.floor(Math.random() * mindImgs.length)];
+        const pad = 0.08;
+        mindDrift = {
+          cx: x, cy: y,
+          tx: pad + Math.random() * (1 - 2 * pad),
+          ty: pad + Math.random() * (1 - 2 * pad),
+          speed: 0.00008 + Math.random() * 0.00012,
+          rotAngle: Math.random() * Math.PI * 2,
+          rotSpeed: (Math.random() - 0.5) * 0.0006,
+          wobblePhase: Math.random() * Math.PI * 2,
+        };
       } else {
         size    = 0.20 + Math.random() * 0.08;
         opacity = 0.50 + Math.random() * 0.25;
         img     = heartImgs[Math.floor(Math.random() * heartImgs.length)];
       }
-      canvasElements.push({ type, x, y, size, opacity, phase, driftSpeed, img, hue, blobSeed, blobColor, blobComplexity });
+      canvasElements.push({ type, x, y, size, opacity, phase, driftSpeed, img, hue, blobSeed, blobColor, blobComplexity, mindDrift });
     }
 
     function drawCanvasElements() {
@@ -1736,28 +2218,39 @@
           ctx.restore();
 
         } else if (el.type === 'mind' && el.img && el.img.complete && el.img.naturalWidth > 0) {
-          const speed = 0.001 * (0.03 + el.driftSpeed * 0.06);
-          const tc    = t * speed;
+          const d = el.mindDrift;
+          if (!d) return;
 
-          const mx = el.x + Math.sin(tc * 1.3 + el.phase) * 0.22
-                           + Math.sin(tc * 3.1 + el.phase) * 0.07
-                           + Math.sin(tc * 7.3 + el.phase) * 0.025;
-          const my = el.y + Math.cos(tc * 1.1 + el.phase) * 0.20
-                           + Math.cos(tc * 2.9 + el.phase) * 0.06
-                           + Math.cos(tc * 6.7 + el.phase) * 0.02;
-          const cx = Math.max(0.06, Math.min(0.94, mx)) * W;
-          const cy = Math.max(0.06, Math.min(0.94, my)) * H;
+          const dx = d.tx - d.cx, dy = d.ty - d.cy;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 0.01) {
+            const pad = 0.08;
+            d.tx = pad + Math.random() * (1 - 2 * pad);
+            d.ty = pad + Math.random() * (1 - 2 * pad);
+            d.rotSpeed = (Math.random() - 0.5) * 0.0006;
+          } else {
+            d.cx += (dx / dist) * d.speed;
+            d.cy += (dy / dist) * d.speed;
+          }
+
+          const targetAngle = Math.atan2(dy, dx);
+          let angleDiff = targetAngle - d.rotAngle;
+          angleDiff = ((angleDiff + Math.PI) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2) - Math.PI;
+          d.rotAngle += angleDiff * 0.02;
+
+          d.wobblePhase += 0.012;
+          const wobbleX = Math.sin(d.wobblePhase) * 0.012;
+          const wobbleY = Math.cos(d.wobblePhase * 0.7) * 0.010;
+
+          const cx = Math.max(0.05, Math.min(0.95, d.cx + wobbleX)) * W;
+          const cy = Math.max(0.05, Math.min(0.95, d.cy + wobbleY)) * H;
           const r  = el.size * minDim * 1.1;
-
-          const dt = 0.016;
-          const nx = el.x + Math.sin((tc + dt) * 1.3 + el.phase) * 0.22;
-          const ny = el.y + Math.cos((tc + dt) * 1.1 + el.phase) * 0.20;
-          const angle = Math.atan2((ny - my) * H, (nx - mx) * W) + Math.PI * 1.5;
 
           ctx.save();
           ctx.globalAlpha = el.opacity * 0.76;
           ctx.globalCompositeOperation = 'screen';
-          ctx.translate(cx, cy); ctx.rotate(angle);
+          ctx.translate(cx, cy);
+          ctx.rotate(d.rotAngle - Math.PI / 2);
           ctx.drawImage(el.img, -r, -r, r * 2, r * 2);
           ctx.restore();
 
@@ -1825,8 +2318,62 @@
         }
         colorBalance = Math.max(0, colorEarned - totalSpent);
         syncBalanceUI();
+
+        advancePillHint();
       });
     });
+
+    /* ── Pill attention — highlight all "1 hour" pills ───── */
+    const tariffCards = Array.from(document.querySelectorAll('.tariff'));
+
+    function clearAllHints() {
+      document.querySelectorAll('.tariff-pill--hint').forEach(p => {
+        p.classList.remove('tariff-pill--hint');
+        const lbl = p.querySelector('.tariff-hint-label');
+        if (lbl) lbl.remove();
+      });
+    }
+
+    function highlightAllHourPills() {
+      clearAllHints();
+      tariffCards.forEach((card, i) => {
+        if (card.classList.contains('tariff--unlocked')) return;
+        const hourPill = card.querySelector('.tariff-pill[data-mins="60"]');
+        if (!hourPill) return;
+
+        hourPill.classList.add('tariff-pill--hint');
+        hourPill.style.animationDelay = `${i * 0.15}s, ${i * 0.15}s`;
+
+        if (i === 0) {
+          const label = document.createElement('span');
+          label.className = 'tariff-hint-label';
+          label.textContent = 'tap to try';
+          hourPill.appendChild(label);
+        }
+      });
+    }
+
+    function advancePillHint() {
+      const anyLeft = tariffCards.some(c => !c.classList.contains('tariff--unlocked'));
+      if (anyLeft) {
+        setTimeout(highlightAllHourPills, 400);
+      } else {
+        clearAllHints();
+      }
+    }
+
+    const spendSection = document.getElementById('spend');
+    if (spendSection) {
+      const hintObserver = new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting && tariffUnlockCount === 0) {
+            setTimeout(highlightAllHourPills, 600);
+            hintObserver.disconnect();
+          }
+        });
+      }, { threshold: 0.3 });
+      hintObserver.observe(spendSection);
+    }
 
     function syncBalanceUI() {
       // Big number shows remaining balance (drains as you spend)
@@ -1849,45 +2396,84 @@
       });
     }
 
-    /* ── Sticky balance card (pins only during spend section) ── */
+    /* ── Sticky balance card ────────────────────────────────── */
     (function initStickyBalance() {
-      const card  = document.querySelector('.balance-card');
-      const demo  = document.querySelector('.balance-demo');
-      const spend = document.getElementById('spend');
-      const nav   = document.querySelector('nav');
-      if (!card || !demo || !spend) return;
+      const card   = document.querySelector('.balance-card');
+      const demo   = document.querySelector('.balance-demo');
+      const region = document.querySelector('.balance-sticky-region');
+      const nav    = document.querySelector('nav');
+      const spendLabel = document.getElementById('spend-label');
+      if (!card || !demo || !region || !nav) return;
 
-      let pinned = false;
-      let cardH  = 0;
+      const isMobile = () => window.innerWidth <= 768;
+      if (isMobile()) return;
 
-      function navH() { return nav ? nav.offsetHeight : 64; }
+      let mode = 'static'; // 'static' | 'fixed' | 'bottomed'
+      let naturalW = card.offsetWidth;
+      let naturalL = card.getBoundingClientRect().left;
 
-      function pin() {
-        if (pinned) return;
-        pinned = true;
-        cardH  = card.offsetHeight;
-        demo.style.paddingBottom = cardH + 'px';
-        card.style.setProperty('--balance-pin-top', (navH() + 8) + 'px');
-        card.classList.add('balance-card--pinned');
+      function cacheNatural() {
+        if (mode === 'static') {
+          naturalW = card.offsetWidth;
+          naturalL = card.getBoundingClientRect().left;
+        }
+      }
+      window.addEventListener('resize', cacheNatural);
+
+      const demoPadTop = parseInt(getComputedStyle(demo).paddingTop, 10) || 0;
+
+      function update() {
+        const navH     = nav.offsetHeight;
+        const gap      = 8;
+        const pinTop   = navH + gap;
+        const demoRect = demo.getBoundingClientRect();
+        const regRect  = region.getBoundingClientRect();
+        const cardH    = card.offsetHeight;
+
+        cacheNatural();
+
+        card.style.setProperty('--pin-top', pinTop + 'px');
+        card.style.setProperty('--pin-width', naturalW + 'px');
+        card.style.setProperty('--pin-left', naturalL + 'px');
+        card.style.setProperty('--pin-left-abs', (naturalL - region.offsetLeft) + 'px');
+
+        const cardNaturalTop = demoRect.top + demoPadTop;
+        const scrolledPast   = cardNaturalTop < pinTop;
+        const spendTop       = spendLabel ? spendLabel.getBoundingClientRect().top : Infinity;
+        const cardWouldEnd   = pinTop + cardH;
+        const hitBottom      = spendTop <= cardWouldEnd;
+
+        if (!scrolledPast) {
+          if (mode !== 'static') {
+            card.classList.remove('balance-card--fixed', 'balance-card--bottomed');
+            demo.style.minHeight = '';
+            mode = 'static';
+          }
+        } else if (hitBottom) {
+          const regionTop = region.getBoundingClientRect().top + window.scrollY;
+          const spendAbs  = spendLabel.getBoundingClientRect().top + window.scrollY;
+          const parkTop   = spendAbs - regionTop - cardH;
+          card.style.setProperty('--park-top', parkTop + 'px');
+
+          if (mode !== 'bottomed') {
+            card.classList.remove('balance-card--fixed');
+            card.classList.add('balance-card--bottomed');
+            demo.style.minHeight = (demoPadTop + cardH) + 'px';
+            mode = 'bottomed';
+          }
+        } else {
+          if (mode !== 'fixed') {
+            card.classList.remove('balance-card--bottomed');
+            card.classList.add('balance-card--fixed');
+            demo.style.minHeight = (demoPadTop + cardH) + 'px';
+            mode = 'fixed';
+          }
+        }
       }
 
-      function unpin() {
-        if (!pinned) return;
-        pinned = false;
-        card.classList.remove('balance-card--pinned');
-        card.style.removeProperty('--balance-pin-top');
-        demo.style.paddingBottom = '';
-      }
-
-      function check() {
-        const r = spend.getBoundingClientRect();
-        // spend section is on screen: its top < viewport bottom AND its bottom > 0
-        const visible = r.top < window.innerHeight && r.bottom > 0;
-        if (visible) pin(); else unpin();
-      }
-
-      window.addEventListener('scroll', check, { passive: true });
-      check();
+      window.addEventListener('scroll', update, { passive: true });
+      window.addEventListener('resize', update);
+      update();
     })();
 
 
@@ -1944,15 +2530,16 @@
 
       if (sourceState[key] >= max) return;
 
+      card.classList.add('source-card--tapped');
+
       sourceState[key] = Math.min(sourceState[key] + step, max);
 
-      card.querySelector('.source-earned').textContent = sourceState[key];
-      card.querySelector('.source-max-fill').style.width =
-        (sourceState[key] / max * 100) + '%';
+      const pct = (sourceState[key] / max * 100);
+      const progressBar = card.querySelector('.source-progress');
+      if (progressBar) progressBar.style.width = pct + '%';
 
       if (sourceState[key] >= max) {
         card.classList.add('source-card--full');
-        card.querySelector('.source-tap-hint').textContent = 'maxed out';
       }
 
       updateBalanceDisplay();
@@ -1979,6 +2566,32 @@
         }
       });
     });
+
+    /* ── Mobile hamburger toggle ──────────────────────────── */
+    const navToggle = document.querySelector('.nav-toggle');
+    const navDrawer = document.getElementById('nav-drawer');
+    if (navToggle && navDrawer) {
+      const openIcon  = navToggle.querySelector('.nav-toggle-open');
+      const closeIcon = navToggle.querySelector('.nav-toggle-close');
+
+      navToggle.addEventListener('click', () => {
+        const isOpen = navDrawer.classList.toggle('open');
+        navToggle.setAttribute('aria-expanded', isOpen);
+        openIcon.style.display  = isOpen ? 'none' : 'block';
+        closeIcon.style.display = isOpen ? 'block' : 'none';
+        document.body.style.overflow = isOpen ? 'hidden' : '';
+      });
+
+      navDrawer.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+          navDrawer.classList.remove('open');
+          navToggle.setAttribute('aria-expanded', 'false');
+          openIcon.style.display  = 'block';
+          closeIcon.style.display = 'none';
+          document.body.style.overflow = '';
+        });
+      });
+    }
 
     /* ── Auto copyright year ───────────────────────────────── */
     const yearEl = document.getElementById('copy-year');
