@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nowhere — notice real life to go online</title>
-<meta name="description" content="A screen-time app for iOS. Earn colors by living — steps, sleep, and small daily choices — and spend them to open your feeds." />
+<title>Nowhere — your day earns your feed</title>
+<meta name="description" content="Screen time isn't the problem — missing real life is. Nowhere is built for people who love being online and just want to make sure real life keeps up." />
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
 <style>
@@ -39,15 +39,16 @@
   header.hero, section, footer{position:relative;z-index:1}
 
   /* header */
-  nav{position:sticky;top:0;z-index:10;backdrop-filter:blur(12px);
-      background:color-mix(in srgb,var(--bg) 78%,transparent)}
+  nav{position:sticky;top:0;z-index:10}
+  nav::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;
+              background:linear-gradient(rgba(7,8,11,.45),rgba(7,8,11,0))}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:62px}
   .logo{display:flex;align-items:center;gap:10px;font-family:var(--serif);font-weight:700;letter-spacing:.1em;font-size:17px}
   .logo img{width:24px;height:24px;border-radius:6px}
-  .btn{display:inline-block;padding:10px 18px;border-radius:999px;font-size:14px;font-weight:600;
-       background:var(--fg);color:var(--bg);transition:transform .15s ease,opacity .15s ease}
-  .btn:hover{transform:translateY(-1px);opacity:.92}
-  .btn.ghost{background:transparent;color:var(--fg);border:1px solid var(--line)}
+  .appstore-badge{display:inline-block;line-height:0;transition:transform .15s ease,opacity .15s ease}
+  .appstore-badge:hover{transform:translateY(-1px);opacity:.9}
+  .appstore-badge img{display:block;width:auto}
+  .nav-right .appstore-badge img{height:34px}
   .nav-right{display:flex;align-items:center;gap:clamp(14px,3vw,28px)}
   .nav-link{font-size:14px;color:rgba(244,243,239,.78);transition:color .15s ease}
   .nav-link:hover{color:var(--fg)}
@@ -56,11 +57,43 @@
   header.hero{padding:clamp(72px,15vh,150px) 0 clamp(28px,6vh,60px);text-align:center}
   .kicker{color:rgba(244,243,239,.66);font-size:14px;letter-spacing:.16em;text-transform:lowercase;
           margin-bottom:26px}
-  h1{font-family:var(--serif);font-size:clamp(46px,10vw,108px);line-height:.98;font-weight:800;
-     text-transform:uppercase;letter-spacing:.02em}
-  h1 .em{display:block;font-family:var(--serif);font-style:italic;font-weight:500;color:rgba(244,243,239,.84);
-         font-size:clamp(20px,3.4vw,34px);letter-spacing:0;margin-top:22px;text-transform:none}
-  .cta-row{margin-top:40px;display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}
+  h1{font-family:var(--serif);font-size:clamp(32px,5.4vw,60px);line-height:1.1;font-weight:500;
+     letter-spacing:-.01em;max-width:30ch;margin:0 auto}
+  h1 .em{display:block;font-style:italic;font-weight:500;color:rgba(244,243,239,.82)}
+  .hero-sub{max-width:36ch;margin:24px auto 0;color:rgba(244,243,239,.8);
+            font-size:clamp(16px,2.1vw,20px);line-height:1.5}
+  .cta-row{margin-top:36px;display:flex;gap:16px;align-items:center;justify-content:center;flex-wrap:wrap}
+  .hero .appstore-badge img{height:54px}
+
+  /* stat block */
+  .stat{padding:clamp(40px,9vh,110px) 0;text-align:center}
+  .stat .wrap{max-width:680px}
+  .stat-item + .stat-item{margin-top:clamp(40px,7vh,72px)}
+  .stat-big{font-family:var(--serif);font-size:clamp(60px,12vw,120px);line-height:.95;font-weight:600;
+            letter-spacing:-.02em;white-space:nowrap}
+  .stat-cap{margin-top:10px;font-size:clamp(16px,2vw,21px);color:rgba(244,243,239,.88)}
+  .stat-claim{font-family:var(--serif);font-size:clamp(32px,5.2vw,58px);line-height:1.08;font-weight:500;
+              letter-spacing:-.01em;max-width:20ch;margin:0 auto}
+  .stat-src{max-width:34ch;margin:14px auto 0;font-size:12.5px;letter-spacing:.02em;line-height:1.5;
+            color:rgba(244,243,239,.55)}
+  .stat-flip{font-family:var(--serif);font-style:italic;font-size:clamp(22px,3.2vw,32px);
+             margin-top:clamp(40px,7vh,72px);color:var(--fg)}
+
+  /* why section */
+  .why{padding:clamp(44px,10vh,120px) 0;text-align:center}
+  .why .wrap{max-width:640px}
+  .why-title{font-family:var(--serif);font-size:clamp(28px,4.6vw,46px);font-weight:500;line-height:1.14;
+             letter-spacing:-.01em;max-width:20ch;margin:0 auto}
+  .why-lead{font-family:var(--serif);font-style:italic;font-size:clamp(19px,2.6vw,26px);
+            margin:22px auto 0;color:rgba(244,243,239,.9);max-width:32ch}
+  .why-body{margin:22px auto 0;max-width:58ch;font-size:clamp(16px,1.9vw,18px);line-height:1.62;
+            color:rgba(244,243,239,.78)}
+  .why-body em{font-style:italic;color:rgba(244,243,239,.96)}
+  .why-turn{font-family:var(--serif);font-style:italic;font-size:clamp(20px,2.8vw,28px);
+            margin-top:30px;color:var(--fg)}
+  .why-cred{margin-top:clamp(36px,6vh,60px);font-size:12px;letter-spacing:.1em;text-transform:uppercase;
+            color:rgba(244,243,239,.5)}
+  .why-cred span{display:block;margin-bottom:8px;color:rgba(244,243,239,.4)}
 
   /* feature rows */
   .shots{padding:clamp(52px,10vh,104px) 0 clamp(20px,5vh,60px)}
@@ -94,18 +127,6 @@
     .reveal-js .reveal{opacity:1;transform:none;transition:none}
     .feature-media img,.feature-media img:hover{transition:none}
   }
-
-  /* explanation */
-  section.explain{padding:clamp(64px,11vh,120px) 0;margin-top:clamp(40px,8vh,90px);text-align:center}
-  .explain h2{font-family:var(--serif);font-size:clamp(26px,4.4vw,42px);font-weight:400;letter-spacing:-.005em;line-height:1.15;
-              max-width:20ch;margin:0 auto}
-  .explain h2 .em{font-style:italic;font-weight:500;color:rgba(244,243,239,.74)}
-  .explain p{max-width:54ch;margin:22px auto 0;color:rgba(244,243,239,.78);font-size:clamp(16px,2vw,19px)}
-  .sources{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:34px}
-  .chip{display:inline-flex;align-items:center;gap:9px;border:1px solid var(--line);
-        border-radius:999px;padding:9px 16px;font-size:14.5px}
-  .chip i{width:9px;height:9px;border-radius:50%}
-  .explain .cta-row{margin-top:40px}
 
   /* maker's note */
   .note{padding:clamp(36px,7vh,80px) 0 clamp(10px,3vh,30px);text-align:center}
@@ -147,25 +168,49 @@
     <a class="logo" href="#top"><img src="assets/app-icon.png" alt="" />NOWHERE</a>
     <div class="nav-right">
       <a class="nav-link" href="https://pudan.me/blog" target="_blank" rel="noopener">blog</a>
-      <a class="btn" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" data-appstore>get the app</a>
+      <a class="appstore-badge" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" data-appstore aria-label="Download Nowhere on the App Store"><img src="assets/appstore-badge.svg" alt="Download on the App Store" /></a>
     </div>
   </div>
 </nav>
 
 <header class="hero">
   <div class="wrap">
-    <p class="kicker">a screen-time app for ios</p>
-    <h1>nowhere<span class="em">notice real life to go online</span></h1>
+    <h1>Screen time is not a problem.<span class="em">Missing real life is.</span></h1>
+    <p class="hero-sub">Nowhere is built for people who love being online and just want to make sure real life keeps up.</p>
     <div class="cta-row">
-      <a class="btn" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" data-appstore>download on the App&nbsp;Store</a>
-      <a class="btn ghost" href="#explain">how it works</a>
+      <a class="appstore-badge" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" data-appstore aria-label="Download Nowhere on the App Store"><img src="assets/appstore-badge.svg" alt="Download on the App Store" /></a>
     </div>
   </div>
 </header>
 
+<section class="stat reveal">
+  <div class="wrap">
+    <div class="stat-item">
+      <p class="stat-big">6h 38m</p>
+      <p class="stat-cap">online, every day</p>
+      <p class="stat-src">DataReportal · Digital 2025</p>
+    </div>
+    <div class="stat-item">
+      <p class="stat-claim">most of the rest won't be remembered.</p>
+      <p class="stat-src">because your brain only forms memories when you're actually noticing.</p>
+    </div>
+    <p class="stat-flip">Nowhere is for the parts worth remembering.</p>
+  </div>
+</section>
+
+<section class="why reveal">
+  <div class="wrap">
+    <h2 class="why-title">Why does life start feeling like it's passing by?</h2>
+    <p class="why-lead">You're not online too much. You're just not noticing enough in between.</p>
+    <p class="why-body">Research shows the brain only encodes vivid, lasting memories during moments of genuine attention — when something catches your eye, moves you, or makes you pause. Routine moments on autopilot, including passive scrolling, largely don't make it in. This is why whole weeks can disappear without a single thing you can point to and say: <em>that was good.</em></p>
+    <p class="why-body">Nowhere gives you one small prompt before you go online. Not a limit. Not a lecture. Just a moment to look up — and let something real in first.</p>
+    <p class="why-turn">That's the part that stays with you.</p>
+    <p class="why-cred"><span>Backed by research from</span>Harvard · Stanford · UC Berkeley</p>
+  </div>
+</section>
+
 <section class="shots" id="screens">
   <div class="shots-head wrap">
-    <p class="kicker">a look inside</p>
     <h2 class="shots-title">the app, <span class="em">screen by screen</span></h2>
   </div>
   <div class="features">
@@ -174,7 +219,7 @@
       <div class="feature-copy">
         <span class="feature-label">Canvas</span>
         <h3 class="feature-title">your day, in color</h3>
-        <p class="feature-text">your whole day painted as color — steps, sleep, and small wins fill it in.</p>
+        <p class="feature-text">a generative canvas of your day — steps, sleep, and three small choices for body, mind, and heart turn into color.</p>
       </div>
     </article>
 
@@ -183,16 +228,16 @@
       <div class="feature-copy">
         <span class="feature-label">My Feeds</span>
         <h3 class="feature-title">set the price</h3>
-        <p class="feature-text">choose which apps to limit and how much screen time you need to use them.</p>
+        <p class="feature-text">pick the apps that cost you, and set what time on each one is worth in colors.</p>
       </div>
     </article>
 
     <article class="feature reveal">
       <div class="feature-media"><img src="assets/paygate.webp" alt="A locked app asking you to spend colors to unlock" /></div>
       <div class="feature-copy">
-        <span class="feature-label">The Lock Screen</span>
-        <h3 class="feature-title">time's up, locked</h3>
-        <p class="feature-text">when your screen time for this app runs out, the app gets locked.</p>
+        <span class="feature-label">PayGate</span>
+        <h3 class="feature-title">spend to open</h3>
+        <p class="feature-text">a soft gate, not a hard block — open your feed with the colors you earned.</p>
       </div>
     </article>
 
@@ -201,7 +246,7 @@
       <div class="feature-copy">
         <span class="feature-label">Widgets</span>
         <h3 class="feature-title">always in reach</h3>
-        <p class="feature-text">check your color balance and unlock feeds right from the home screen.</p>
+        <p class="feature-text">your color balance on the home screen — earn and spend without opening the app.</p>
       </div>
     </article>
 
@@ -210,38 +255,19 @@
       <div class="feature-copy">
         <span class="feature-label">Archive</span>
         <h3 class="feature-title">every day you've made</h3>
-        <p class="feature-text">browse every daily canvas you've painted — one for each day.</p>
+        <p class="feature-text">every day you earned, kept as a canvas to look back on.</p>
       </div>
     </article>
-  </div>
-</section>
-
-<section class="explain" id="explain">
-  <div class="wrap">
-    <h2>earn colors by living. <span class="em">spend them to open your feeds.</span></h2>
-    <p>Steps, sleep, and one daily choice for your body, mind, and heart fill a pool of up to
-       100 colors. When you want into Instagram, TikTok, or YouTube, you spend colors to unlock
-       it for 10, 30, or 60 minutes. At the end of your day, the pool resets — nothing rolls over.</p>
-    <div class="sources" aria-label="the five sources of color">
-      <span class="chip"><i style="background:var(--steps)"></i>steps</span>
-      <span class="chip"><i style="background:var(--sleep)"></i>sleep</span>
-      <span class="chip"><i style="background:var(--body)"></i>body</span>
-      <span class="chip"><i style="background:var(--mind)"></i>mind</span>
-      <span class="chip"><i style="background:var(--heart)"></i>heart</span>
-    </div>
-    <div class="cta-row" id="get">
-      <a class="btn" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" data-appstore>download on the App&nbsp;Store</a>
-    </div>
   </div>
 </section>
 
 <section class="note reveal" id="maker">
   <div class="wrap">
     <p class="kicker">from the maker</p>
-    <p>Hey — I'm Kosta, and I built Nowhere.</p>
-    <p>I work in front of a screen all day. My days were full, but I could never remember what made any of them mine — I wasn't doomscrolling, just always reaching for the next small hit while the real ones sat right there: a walk, a conversation, the light outside.</p>
-    <p>I couldn't find a tool that said the thing I needed to hear — not “you're wasting your life on screens,” but “look at everything else that's here.” So I built it.</p>
-    <p class="lead">Nowhere isn't about less screen time. It's about noticing the life sitting right next to it.</p>
+    <p>Hey — I'm Kosta. I built Nowhere solo — one person, seven months, no prior dev background. No investors, no team, no compromises on the vision.</p>
+    <p>It started with a personal observation: every day was unique, but at the end I couldn't tell you what made it mine. So I built the thing I needed — still the only tool I've found that doesn't treat screens as the enemy.</p>
+    <p class="lead">Nowhere isn't about less screen time. It's about noticing your day holds more than screens.</p>
+    <p>350 installs. Still building.</p>
     <p class="sign-off">— Kosta</p>
     <a class="portfolio" href="https://pudan.me" target="_blank" rel="noopener">see what else I build → pudan.me</a>
   </div>
