@@ -50,8 +50,8 @@
   .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
   header.hero, section, footer, nav{position:relative;z-index:1}
 
-  /* nav */
-  nav{position:sticky;top:0;z-index:10} /* transparent — the gradient flows through */
+  /* nav — sits at the top of the page and scrolls away with it */
+  nav{position:relative;z-index:10}
   .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
   .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:17px}
   .logo img{width:24px;height:24px;border-radius:6px}
@@ -109,41 +109,72 @@
     .hero-phone .frame{max-width:230px;transform:rotate(3deg)}
   }
 
-  /* worldwide ticker — flips through daily screen time across places */
+  /* worldwide — an interactive bar chart of daily screen time across places */
   .stats{position:relative;z-index:1;background:var(--cream);
          border-radius:clamp(22px,4vw,40px) clamp(22px,4vw,40px) 0 0;
          padding:clamp(52px,10vh,110px) 0 clamp(20px,3vh,32px);text-align:center}
-  .stats .wrap{max-width:720px}
-  .tk-lead{margin-bottom:18px}
-  .ticker{display:flex;align-items:center;justify-content:center;gap:clamp(8px,3vw,26px);perspective:900px}
-  .tk-face{cursor:pointer;transform-origin:center;transition:transform .26s ease,opacity .26s ease;
-           min-width:min(74vw,360px);outline:none}
-  .tk-face.out{transform:rotateX(90deg);opacity:0}
-  .tk-face.in{transform:rotateX(-90deg);opacity:0}
-  .tk-face.nofx{transition:none}
-  .tk-time{display:block;font-size:clamp(46px,9.5vw,104px);font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--ink);
-           font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
-  .tk-place{display:block;margin-top:14px;font-size:clamp(16px,2.2vw,20px);font-weight:600;color:var(--ink)}
-  .tk-place em{font-style:normal;font-weight:400;color:var(--ink-mute)}
-  .tk-arrow{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);
-            background:transparent;color:var(--ink);font:400 22px/1 var(--ui);cursor:pointer;
-            display:flex;align-items:center;justify-content:center;transition:background .2s,transform .08s}
-  .tk-arrow:hover{background:rgba(27,26,22,.06)}
-  .tk-arrow:active{transform:scale(.93)}
-  .tk-dots{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;margin-top:24px}
-  .tk-dot{width:6px;height:6px;border-radius:50%;background:var(--line);border:0;padding:0;cursor:pointer;
-          transition:background .2s,transform .2s}
-  .tk-dot.on{background:var(--amber);transform:scale(1.3)}
-  .stats-note{margin-top:16px;font:400 12px/1.5 var(--mono);letter-spacing:.02em;color:var(--ink-mute)}
+  .stats .wrap{max-width:820px}
+  .tk-lead{margin-bottom:clamp(34px,6vh,52px)}
+  /* the chart: a row of columns rising to each place's daily hours; hover/tap for detail */
+  .chart{position:relative;display:flex;align-items:stretch;justify-content:center;gap:clamp(5px,1.8vw,18px);
+         height:clamp(220px,34vh,320px)}
+  /* each bar is a button — focusable, tappable; reset native chrome */
+  .bar{flex:1 1 0;max-width:74px;min-width:0;display:flex;flex-direction:column;align-items:center;
+       border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;
+       transition:transform .18s cubic-bezier(.2,.7,.2,1)}
+  .bar:hover,.bar.is-active{transform:translateY(-4px)}
+  .bar-col{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
+  .bar-val{font:600 clamp(10px,1.5vw,12.5px)/1 var(--mono);color:var(--ink-soft);margin-bottom:9px;
+           font-variant-numeric:tabular-nums;white-space:nowrap;transition:color .18s ease}
+  .bar-fill{width:clamp(20px,4.6vw,44px);border-radius:8px 8px 3px 3px;
+            background:linear-gradient(180deg,var(--gold),var(--amber));
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.32),0 4px 14px rgba(224,138,52,.22);
+            transition:filter .18s ease,box-shadow .18s ease}
+  .bar:hover .bar-fill,.bar.is-active .bar-fill{filter:saturate(1.12) brightness(1.04);
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 8px 20px rgba(224,138,52,.34)}
+  .bar:hover .bar-val,.bar.is-active .bar-val{color:var(--ink)}
+  /* worker bars — a different, deeper accent: "all screens", and it's even more */
+  .bar.is-work .bar-fill{background:linear-gradient(180deg,#F2A25A,#D2612B);
+            box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 4px 14px rgba(200,90,40,.26)}
+  .bar-flag{margin-top:12px;font-size:clamp(17px,3vw,23px);line-height:1}
+  .bar-name{margin-top:6px;font:500 clamp(9px,1.3vw,10.5px)/1.2 var(--mono);letter-spacing:.01em;
+            color:var(--ink-mute);text-align:center;white-space:nowrap;transition:color .18s ease}
+  .bar:hover .bar-name,.bar.is-active .bar-name{color:var(--ink-soft)}
+  /* floating tooltip — pops above the hovered/tapped bar */
+  .chart-tip{position:absolute;left:0;top:0;transform:translate(-50%,-100%);pointer-events:none;
+             background:var(--night);color:var(--night-ink);border-radius:12px;padding:8px 13px;
+             box-shadow:0 12px 28px rgba(27,26,22,.26);opacity:0;transition:opacity .16s ease;
+             z-index:6;text-align:center;white-space:nowrap}
+  .chart-tip.on{opacity:1}
+  .chart-tip b{display:block;font:700 13.5px/1.25 var(--ui)}
+  .chart-tip span{display:block;margin-top:2px;font:400 11px/1.3 var(--mono);color:var(--night-mute)}
+  /* bars rise on scroll-in, gently staggered */
+  .reveal-js .stats .bar-fill{transform:scaleY(0);transform-origin:bottom;
+                              transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+  .reveal-js .stats.in .bar-fill{transform:scaleY(1)}
+  .reveal-js .stats .bar:nth-child(2) .bar-fill{transition-delay:.04s}
+  .reveal-js .stats .bar:nth-child(3) .bar-fill{transition-delay:.08s}
+  .reveal-js .stats .bar:nth-child(4) .bar-fill{transition-delay:.12s}
+  .reveal-js .stats .bar:nth-child(5) .bar-fill{transition-delay:.16s}
+  .reveal-js .stats .bar:nth-child(6) .bar-fill{transition-delay:.2s}
+  .reveal-js .stats .bar:nth-child(7) .bar-fill{transition-delay:.24s}
+  .reveal-js .stats .bar:nth-child(8) .bar-fill{transition-delay:.28s}
+  .reveal-js .stats .bar:nth-child(9) .bar-fill{transition-delay:.32s}
+  .reveal-js .stats .bar:nth-child(10) .bar-fill{transition-delay:.36s}
+  @media(prefers-reduced-motion:reduce){ .reveal-js .stats .bar-fill{transition:none;transform:none} }
+  .stats-note{margin-top:clamp(22px,4vh,34px);font:400 12px/1.5 var(--mono);letter-spacing:.02em;color:var(--ink-mute)}
   .stats-note a{border-bottom:1px solid var(--line)}
+  .stats-hint{margin-top:6px;font:400 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);opacity:.7}
   .stats-msg{margin:clamp(30px,5vh,46px) auto 0;max-width:32ch;font-family:var(--display);
              font-size:clamp(19px,2.1vw,25px);line-height:1.44;font-weight:500;letter-spacing:-.01em;color:var(--ink-soft)}
-  @media(max-width:560px){ .ticker{gap:4px} .tk-arrow{width:40px;height:40px;font-size:20px} }
+  /* narrow screens: 10 bars → lean on the flags, hide names (the tooltip names them on tap) */
+  @media(max-width:560px){ .chart{gap:3px} .bar-flag{font-size:15px;margin-top:9px} .bar-name{display:none}
+    .bar-val{font-size:9.5px} .chart-tip{white-space:normal;max-width:60vw} }
 
   /* storyline — pinned vertical scrollytelling: a constant-size block. Scrolling advances the
      phones one by one, the left text slides in, and the background gradient shifts per step. */
   .story{position:relative;z-index:1}
-  .story-track{position:relative;height:calc(6 * 76vh)}          /* scroll distance for the 6 steps */
+  .story-track{position:relative;height:calc(4 * 76vh)}          /* scroll distance for the 4 steps */
   .story-stage{position:sticky;top:0;height:100vh;min-height:620px;display:flex;align-items:center;
                overflow:hidden;color:#fff;background:linear-gradient(160deg,#1E2A52,#0E1428)}
   .story-inner{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,72px);align-items:center;width:100%}
@@ -171,7 +202,7 @@
                filter:drop-shadow(0 30px 52px rgba(0,0,0,.42))}
   .story-phone.is-active{opacity:1;transform:none}
   @media(max-width:820px){
-    .story-track{height:calc(6 * 72vh)}
+    .story-track{height:calc(4 * 72vh)}
     .story-stage{min-height:560px}
     .story-inner{grid-template-columns:1fr;gap:clamp(14px,3vh,26px);justify-items:center;text-align:center}
     .story-media{order:-1;height:min(46vh,400px)}
@@ -200,15 +231,27 @@
   .why-foot{margin:18px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-mute);max-width:34ch}
   @media(max-width:760px){ .why-grid{grid-template-columns:1fr;gap:26px} .why-evidence{border-left:0;padding-left:0} }
 
-  /* maker — short + personal */
-  .note{padding:clamp(44px,9vh,96px) 0 clamp(16px,3vh,32px);text-align:center}
-  .note .wrap{max-width:620px}
+  /* maker — short + personal: text on the left, a vertical portrait on the right */
+  .note{padding:clamp(44px,9vh,96px) 0 clamp(16px,3vh,32px)}
+  .note .wrap{max-width:860px}
+  .maker-grid{display:grid;grid-template-columns:1fr auto;gap:clamp(28px,5vw,60px);align-items:center;text-align:left}
   .note .kicker{margin-bottom:22px}
+  /* transparent-cutout portrait: floats free, with the hard bottom edge faded into the background */
+  .note .portrait{width:clamp(190px,27vw,270px);height:auto;object-fit:contain;justify-self:end;align-self:end;
+                  filter:drop-shadow(0 20px 30px rgba(27,26,22,.18));
+                  -webkit-mask-image:linear-gradient(to bottom,#000 68%,transparent 96%);
+                  mask-image:linear-gradient(to bottom,#000 68%,transparent 96%)}
   .note p{color:var(--ink-soft);font-size:clamp(16px,2vw,19px);line-height:1.62}
   .note p + p{margin-top:18px}
   .note a.write{color:var(--ink);border-bottom:1px solid var(--amber);padding-bottom:1px;transition:opacity .2s}
   .note a.write:hover{opacity:.75}
   .note .sign-off{font-family:var(--display);font-weight:700;font-size:clamp(19px,2.4vw,23px);color:var(--ink);margin-top:24px}
+  .note .cta-row{justify-content:flex-start}
+  @media(max-width:640px){
+    .maker-grid{grid-template-columns:1fr;justify-items:center;text-align:center}
+    .note .portrait{grid-row:1;justify-self:center;margin-bottom:8px}
+    .note .cta-row{justify-content:center}
+  }
 
   /* footer */
   footer{padding:34px 0;color:var(--ink-mute);border-top:1px solid var(--line);margin-top:clamp(32px,6vh,64px);
@@ -267,17 +310,22 @@
 <section class="stats reveal" id="worldwide">
   <div class="wrap">
     <p class="tk-lead">time on a screen, every day</p>
-    <div class="ticker">
-      <button class="tk-arrow" type="button" data-dir="-1" aria-label="Previous">&lsaquo;</button>
-      <div class="tk-face" id="tkFace" role="button" tabindex="0" aria-live="polite">
-        <span class="tk-time">9h 24m</span>
-        <span class="tk-place">South Africa <em>· ages 16–64</em></span>
-      </div>
-      <button class="tk-arrow" type="button" data-dir="1" aria-label="Next">&rsaquo;</button>
+    <div class="chart" role="group" aria-label="Average daily screen time. Remote workers about 13 hours, office workers about 10 hours (all screens); then by country, ages 16–64: South Africa 9h24m, Brazil 9h13m, Philippines 8h52m, United States 7h03m, United Kingdom 6h02m, Netherlands 5h30m, Germany 5h22m, Japan 3h56m.">
+      <button class="bar is-work" type="button" data-place="Remote workers" data-time="~13h" data-note="all screens" aria-label="Remote workers, about 13 hours a day, all screens"><div class="bar-col"><span class="bar-val">~13h</span><span class="bar-fill" style="height:95%"></span></div><span class="bar-flag">🏠</span><span class="bar-name">Remote</span></button>
+      <button class="bar is-work" type="button" data-place="Office workers" data-time="~10h" data-note="all screens" aria-label="Office workers, about 10 hours a day, all screens"><div class="bar-col"><span class="bar-val">~10h</span><span class="bar-fill" style="height:73%"></span></div><span class="bar-flag">💼</span><span class="bar-name">Office</span></button>
+      <button class="bar" type="button" data-place="South Africa" data-time="9h 24m" data-note="ages 16–64" aria-label="South Africa, 9 hours 24 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">9h24</span><span class="bar-fill" style="height:69%"></span></div><span class="bar-flag">🇿🇦</span><span class="bar-name">S. Africa</span></button>
+      <button class="bar" type="button" data-place="Brazil" data-time="9h 13m" data-note="ages 16–64" aria-label="Brazil, 9 hours 13 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">9h13</span><span class="bar-fill" style="height:67%"></span></div><span class="bar-flag">🇧🇷</span><span class="bar-name">Brazil</span></button>
+      <button class="bar" type="button" data-place="Philippines" data-time="8h 52m" data-note="ages 16–64" aria-label="Philippines, 8 hours 52 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">8h52</span><span class="bar-fill" style="height:65%"></span></div><span class="bar-flag">🇵🇭</span><span class="bar-name">Philipp.</span></button>
+      <button class="bar" type="button" data-place="United States" data-time="7h 03m" data-note="ages 16–64" aria-label="United States, 7 hours 3 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">7h03</span><span class="bar-fill" style="height:52%"></span></div><span class="bar-flag">🇺🇸</span><span class="bar-name">USA</span></button>
+      <button class="bar" type="button" data-place="United Kingdom" data-time="6h 02m" data-note="ages 16–64" aria-label="United Kingdom, 6 hours 2 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">6h02</span><span class="bar-fill" style="height:44%"></span></div><span class="bar-flag">🇬🇧</span><span class="bar-name">UK</span></button>
+      <button class="bar" type="button" data-place="Netherlands" data-time="5h 30m" data-note="ages 16–64" aria-label="Netherlands, 5 hours 30 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">5h30</span><span class="bar-fill" style="height:40%"></span></div><span class="bar-flag">🇳🇱</span><span class="bar-name">Neth.</span></button>
+      <button class="bar" type="button" data-place="Germany" data-time="5h 22m" data-note="ages 16–64" aria-label="Germany, 5 hours 22 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">5h22</span><span class="bar-fill" style="height:39%"></span></div><span class="bar-flag">🇩🇪</span><span class="bar-name">Germany</span></button>
+      <button class="bar" type="button" data-place="Japan" data-time="3h 56m" data-note="ages 16–64" aria-label="Japan, 3 hours 56 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">3h56</span><span class="bar-fill" style="height:29%"></span></div><span class="bar-flag">🇯🇵</span><span class="bar-name">Japan</span></button>
+      <div class="chart-tip" id="chartTip" role="status" aria-live="polite" aria-hidden="true"></div>
     </div>
-    <div class="tk-dots" id="tkDots" aria-hidden="true"></div>
-    <p class="stats-note">Sources: DataReportal, 2026 · All About Vision</p>
-    <p class="stats-msg">We all have strong reasons for that much screen time. It only becomes a problem when you stop noticing the real things — the ones that move you, that actually happen — and every day starts to feel like the last.</p>
+    <p class="stats-hint">hover or tap a bar</p>
+    <p class="stats-note">Daily screen time · workers: all screens · countries: ages 16–64 · Sources: DataReportal, 2026 · All About Vision</p>
+    <p class="stats-msg">The problem isn't the hours. It's the real moments you stop noticing — until every day feels like the last.</p>
   </div>
 </section>
 
@@ -285,7 +333,7 @@
   <div class="wrap why-grid">
     <div class="why-head">
       <p class="kicker">the science</p>
-      <h2 class="why-title">Why the real ones stay with you</h2>
+      <h2 class="why-title">What you really remember</h2>
       <p class="why-body">Your brain keeps what you actually notice. Moments of real attention get saved as memory; autopilot scrolling mostly doesn't. That's how a whole week can pass without one thing you'd point to and call good.</p>
       <p class="why-body">Give a real moment even a few seconds of genuine attention and it lands — it's still there tomorrow. That's the part that stays.</p>
     </div>
@@ -312,8 +360,6 @@
             <article class="story-step"><span class="beat-num">02</span><h3 class="beat-title">Real life fills it</h3><p class="beat-text">Every activity you log becomes color.</p></article>
             <article class="story-step"><span class="beat-num">03</span><h3 class="beat-title">Unlock the feed</h3><p class="beat-text">Spend color to open your apps.</p></article>
             <article class="story-step"><span class="beat-num">04</span><h3 class="beat-title">Time runs out</h3><p class="beat-text">When it's spent, the app locks again.</p></article>
-            <article class="story-step"><span class="beat-num">05</span><h3 class="beat-title">The canvas drains</h3><p class="beat-text">Spending empties it back out.</p></article>
-            <article class="story-step"><span class="beat-num">06</span><h3 class="beat-title">Always in view</h3><p class="beat-text">Widgets and a live wallpaper.</p></article>
           </div>
           <div class="story-dots" id="storyDots" aria-hidden="true"></div>
         </div>
@@ -322,8 +368,6 @@
           <img class="story-phone" src="assets/2.png" alt="A canvas full of the day's real activities" />
           <img class="story-phone" src="assets/3.png" alt="A few apps unlocked with earned color" />
           <img class="story-phone" src="assets/4.png" alt="An app blocked once the time runs out" />
-          <img class="story-phone" src="assets/5.png" alt="The canvas drained after spending color" />
-          <img class="story-phone" src="assets/6.png" alt="Nowhere widgets and a live wallpaper on the home screen" />
         </div>
       </div>
     </div>
@@ -331,17 +375,23 @@
 </section>
 
 <section class="note reveal" id="maker">
-  <div class="wrap">
-    <p class="kicker">from the maker</p>
-    <p>Hey — I'm Kosta. I built Nowhere on my own, because my days kept blurring into one and I wanted proof there was more to them than the feed.</p>
-    <p>If you try it, tell me what you honestly think — I read every message. Just <a class="write" href="mailto:kostill@gmail.com">write to me</a>.</p>
-    <p class="sign-off">— Kosta</p>
+  <div class="wrap maker-grid">
+    <div class="maker-text">
+      <p class="kicker">from the builder</p>
+      <p>Hey — I'm Kosta. I built Nowhere on my own, because my days kept blurring into one and I wanted proof there was more to them than the feed.</p>
+      <p>Give it a try and tell me what you think — I read every message. Just <a class="write" href="mailto:kostill@gmail.com">write to me</a>.</p>
+      <p class="sign-off">— Kosta</p>
+      <div class="cta-row" style="margin-top: 28px;">
+        <a class="appstore-badge" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" aria-label="Download Nowhere on the App Store"><img src="assets/appstore-badge.svg" alt="Download on the App Store" /></a>
+      </div>
+    </div>
+    <img src="assets/kosta-portrait.png" alt="Kosta" class="portrait" />
   </div>
 </section>
 
 <footer>
   <div class="wrap foot-inner">
-    <div>© 2026 Konstantin Pudan</div>
+    <div>© 2026 Kosta Pudan</div>
     <div class="foot-links">
       <a href="mailto:kostill@gmail.com">contact</a>
       <a href="https://pudan.me/blog" target="_blank" rel="noopener">blog</a>
@@ -445,68 +495,6 @@
     }
   })();
 
-  // ── Worldwide ticker: flip through daily screen time across places ────────────
-  (function(){
-    var face=document.getElementById('tkFace'); if(!face) return;
-    var timeEl=face.querySelector('.tk-time'), placeEl=face.querySelector('.tk-place');
-    var dotsWrap=document.getElementById('tkDots');
-    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    // ranges from the source table collapsed to one representative figure each
-    var DATA=[
-      {t:'9h 24m',p:'South Africa',c:'ages 16–64'},
-      {t:'9h 13m',p:'Brazil',c:'ages 16–64'},
-      {t:'8h 52m',p:'Philippines',c:'ages 16–64'},
-      {t:'7h 03m',p:'United States',c:'ages 16–64'},
-      {t:'6h 02m',p:'United Kingdom',c:'ages 16–64'},
-      {t:'5h 30m',p:'Netherlands',c:'ages 16–64'},
-      {t:'5h 22m',p:'Germany',c:'ages 16–64'},
-      {t:'3h 56m',p:'Japan',c:'ages 16–64'},
-      {t:'6h 40m',p:'Global average',c:'adults, worldwide'},
-      {t:'~10h',p:'Office workers',c:'all screens'},
-      {t:'~13h',p:'Remote workers',c:'all screens'}
-    ];
-    var i=0,timer=null,DWELL=2900;
-
-    var dots=DATA.map(function(_,k){
-      var b=document.createElement('button'); b.className='tk-dot'; b.type='button';
-      b.setAttribute('aria-label','Show place '+(k+1));
-      b.addEventListener('click',function(){ go(k); restart(); });
-      dotsWrap.appendChild(b); return b;
-    });
-    function paint(){
-      timeEl.textContent=DATA[i].t;
-      placeEl.innerHTML=DATA[i].p+' <em>· '+DATA[i].c+'</em>';
-      for(var k=0;k<dots.length;k++) dots[k].classList.toggle('on',k===i);
-    }
-    function go(n){
-      i=(n%DATA.length+DATA.length)%DATA.length;
-      if(reduce){ paint(); return; }
-      face.classList.add('out');
-      setTimeout(function(){
-        paint();
-        face.classList.add('nofx'); face.classList.remove('out'); face.classList.add('in');
-        void face.offsetWidth;
-        face.classList.remove('nofx'); face.classList.remove('in');
-      },260);
-    }
-    function next(d){ go(i+(d||1)); }
-    function start(){ if(reduce||timer) return; timer=setInterval(function(){ next(1); },DWELL); }
-    function stop(){ if(timer){ clearInterval(timer); timer=null; } }
-    function restart(){ stop(); start(); }
-
-    paint();
-    Array.prototype.forEach.call(document.querySelectorAll('.tk-arrow'),function(btn){
-      btn.addEventListener('click',function(){ next(parseInt(btn.getAttribute('data-dir'),10)); restart(); });
-    });
-    face.addEventListener('click',function(){ next(1); restart(); });
-    face.addEventListener('keydown',function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); next(1); restart(); } });
-    var wrap=face.closest('.ticker');
-    wrap.addEventListener('mouseenter',stop);
-    wrap.addEventListener('mouseleave',start);
-    document.addEventListener('visibilitychange',function(){ if(document.hidden){stop();}else{start();} });
-    start();
-  })();
-
   // ── Hero: cycle the word in the yellow pill — a day's worth of real things ──
   // Gentle cross-fade; the pill's width morphs to fit each word; loops forever.
   (function(){
@@ -543,6 +531,38 @@
       entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
     },{rootMargin:'0px 0px -10% 0px'});
     items.forEach(function(el){ io.observe(el); });
+  })();
+
+  // ── Screen-time chart: hover / focus / tap a bar to read its detail ──
+  (function(){
+    var chart=document.getElementById('chart')||document.querySelector('.chart');
+    var tip=document.getElementById('chartTip');
+    if(!chart||!tip) return;
+    var bars=Array.prototype.slice.call(chart.querySelectorAll('.bar'));
+    if(!bars.length) return;
+    var active=null;
+    function show(bar){
+      active=bar;
+      tip.innerHTML='<b>'+bar.getAttribute('data-place')+'</b><span>'+
+        bar.getAttribute('data-time')+' a day · '+bar.getAttribute('data-note')+'</span>';
+      tip.classList.add('on'); tip.setAttribute('aria-hidden','false');
+      bars.forEach(function(b){ b.classList.toggle('is-active',b===bar); });
+      var cr=chart.getBoundingClientRect(), fill=bar.querySelector('.bar-fill'), fr=fill.getBoundingClientRect();
+      // pop above the bar's fill, clamped so edge bars don't overflow the chart
+      var x=fr.left-cr.left+fr.width/2;
+      x=Math.max(64,Math.min(cr.width-64,x));
+      tip.style.left=x+'px';
+      tip.style.top=Math.max(0,fr.top-cr.top-10)+'px';
+    }
+    function hide(){ active=null; tip.classList.remove('on'); tip.setAttribute('aria-hidden','true');
+      bars.forEach(function(b){ b.classList.remove('is-active'); }); }
+    bars.forEach(function(bar){
+      bar.addEventListener('mouseenter',function(){ show(bar); });
+      bar.addEventListener('focus',function(){ show(bar); });
+      bar.addEventListener('blur',hide);
+      bar.addEventListener('click',function(){ active===bar?hide():show(bar); });
+    });
+    chart.addEventListener('mouseleave',hide);
   })();
 
   // ── Hero mockup: map the screencast onto the iPhone's tilted screen (matrix3d homography) ──
@@ -602,9 +622,7 @@
       [[30,42,82],[14,20,40]],   // 01 indigo — morning
       [[104,48,84],[42,18,48]],  // 02 magenta — filled
       [[40,88,104],[16,46,58]],  // 03 teal — unlock
-      [[108,54,32],[46,20,16]],  // 04 ember — blocked
-      [[64,44,96],[24,16,50]],   // 05 violet — drained
-      [[42,92,68],[14,44,32]]    // 06 green — widgets
+      [[108,54,32],[46,20,16]]   // 04 ember — blocked
     ];
     var dotsWrap=document.getElementById('storyDots'), dots=[];
     if(dotsWrap){ dots=steps.map(function(_,i){ var d=document.createElement('span'); d.className='story-dot'; dotsWrap.appendChild(d); return d; }); }
