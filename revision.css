@@ -151,6 +151,16 @@ body{background-color:var(--mint)}
 .moment-examples button[aria-pressed=true] .moment-shape{opacity:1}
 .moment-examples button[aria-pressed=true] .moment-label{transform:translateY(calc(var(--moment-size) - 14px))}
 .moment-examples button:focus-visible{outline:3px solid var(--focus,#4057b6);outline-offset:5px}
+/* Invite the first tap without moving the labels or the native forms. */
+.moment-examples{--moment-cue:#3c54d0}
+[data-theme=green] .moment-examples{--moment-cue:#287a45}
+[data-theme=chill] .moment-examples{--moment-cue:#b72f54}
+.moment-examples.is-inviting button:after{content:"";position:absolute;left:0;top:0;width:var(--moment-size);height:var(--moment-size);border:3px solid var(--moment-cue);border-radius:50%;pointer-events:none;opacity:.8;animation:moment-invitation 1.8s ease-in-out infinite;animation-play-state:paused}
+.moment-examples.is-inviting.is-on-screen button:after{animation-play-state:running}
+.moment-examples li:nth-child(2) button:after{animation-delay:.2s}
+.moment-examples li:nth-child(3) button:after{animation-delay:.4s}
+@keyframes moment-invitation{0%,100%{opacity:.2;transform:scale(1)}45%{opacity:1;transform:scale(1.12)}}
+@media(prefers-reduced-motion:reduce){.moment-examples.is-inviting button:after{animation:none;opacity:1;transform:none}}
 .diary-demo{isolation:isolate}.recorded-capture{isolation:isolate}
 .device-screen .demo-backdrop{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
 .demo-chrome{position:absolute;inset:0;-webkit-mask-image:linear-gradient(#000 17%,transparent 20% 84%,#000 87%);mask-image:linear-gradient(#000 17%,transparent 20% 84%,#000 87%)}
@@ -278,9 +288,9 @@ body{background-color:var(--mint)}
 /* Compact wordmark and three accessible swatch-only 44px targets. */
 @media(max-width:420px){.site-header>.wordmark{font-size:24px}}
 
-/* Keep the recorded phone between the headline and download copy on mobile. */
+/* Keep the mobile introduction together, followed by the recording and download. */
 @media(max-width:760px){
- .hero-world{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"headline" "scene" "description" "actions" "cue";height:auto;padding-top:104px}
+ .hero-world{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"headline" "description" "scene" "actions" "cue";height:auto;padding-top:104px}
  .world-copy{display:contents}
  .world-copy h1{grid-area:headline;margin-inline:20px}
  .world-copy h1{font-size:clamp(24px,7.8vw,46px)}
@@ -291,7 +301,7 @@ body{background-color:var(--mint)}
  .world-copy>p{grid-area:description;width:calc(100% - 40px);max-width:32ch;margin:24px 20px 0}
  .world-actions{grid-area:actions;margin:22px 20px 0}
  .scroll-cue{grid-area:cue;position:static;justify-self:center;transform:none;margin:20px 0 16px}
- [data-theme=chill] .hero-world{background:linear-gradient(var(--paper) 220px,var(--hero-ground) 779px)}
+ [data-theme=chill] .hero-world{background:linear-gradient(var(--paper) 220px,var(--hero-ground) 875px)}
 }
 
 /* Brief opening mark; the phone recording starts after it clears. */

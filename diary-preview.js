@@ -4,6 +4,31 @@
   const title = document.getElementById('canvas-preview-title');
   const status = document.getElementById('canvas-selection-status');
   if (!preview) return;
+  const momentPicker = document.querySelector('.moment-examples');
+  momentPicker?.classList.toggle('is-inviting', buttons.length > 0 && !buttons.some(button => button.getAttribute('aria-pressed') === 'true'));
+  let invitationObserver = null;
+  let pickerInView = false;
+  const syncInvitationVisibility = () => {
+    momentPicker?.classList.toggle('is-on-screen', momentPicker.classList.contains('is-inviting') && pickerInView && !document.hidden);
+  };
+  if (momentPicker?.classList.contains('is-inviting')) {
+    if ('IntersectionObserver' in window) {
+      invitationObserver = new IntersectionObserver(entries => {
+        pickerInView = entries.some(entry => entry.isIntersecting && entry.intersectionRatio >= 0.1);
+        syncInvitationVisibility();
+      }, { threshold: 0.1 });
+      invitationObserver.observe(momentPicker);
+    } else {
+      pickerInView = true;
+      syncInvitationVisibility();
+    }
+    document.addEventListener('visibilitychange', syncInvitationVisibility);
+  }
+  const stopInvitation = () => {
+    momentPicker?.classList.remove('is-inviting', 'is-on-screen');
+    invitationObserver?.disconnect();
+    document.removeEventListener('visibilitychange', syncInvitationVisibility);
+  };
 
   const pointCount = 120;
   const radius = 135;
@@ -137,6 +162,7 @@
     // Native button activation supplies click for pointer, Enter, and Space;
     // retaining the same element also retains focus through every morph.
     button.addEventListener('click', () => {
+      stopInvitation();
       const nextSelected = button.getAttribute('aria-pressed') !== 'true';
       button.setAttribute('aria-pressed', String(nextSelected));
       form.classList.toggle('is-visible', nextSelected);
