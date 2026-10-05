@@ -1,4 +1,6 @@
-html{scroll-behavior:auto}
+/* Keep Safari's inset and overscroll canvas on the active page ground. */
+html{scroll-behavior:auto;background-color:var(--mint)}
+body{background-color:var(--mint)}
 /* The photographic hero inherits the blue and gold scene and its registered phone. */
 .site-header{position:absolute;top:0;left:6%;width:88%;height:96px;z-index:5}
 .store-badge{display:inline-flex;align-items:center;gap:13px;background:var(--ink);color:#fffdf6;padding:11px 18px;border-radius:12px;text-decoration:none;line-height:1.05;min-height:64px}
@@ -276,7 +278,7 @@ html{scroll-behavior:auto}
 /* Compact wordmark and three accessible swatch-only 44px targets. */
 @media(max-width:420px){.site-header>.wordmark{font-size:24px}}
 
-@media(max-width:760px){[data-theme=chill] .hero-world{background:var(--paper)}}
+@media(max-width:760px){[data-theme=chill] .hero-world{background:linear-gradient(var(--paper) 420px,var(--hero-ground) 940px)}}
 
 /* Supplied music stays upright on the shared ground, below each complete sheet. */
 .day-music{margin-top:24px;text-align:left;color:var(--ink);font-size:14px;line-height:21px}
