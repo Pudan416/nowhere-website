@@ -278,7 +278,32 @@ body{background-color:var(--mint)}
 /* Compact wordmark and three accessible swatch-only 44px targets. */
 @media(max-width:420px){.site-header>.wordmark{font-size:24px}}
 
-@media(max-width:760px){[data-theme=chill] .hero-world{background:linear-gradient(var(--paper) 420px,var(--hero-ground) 940px)}}
+/* Keep the recorded phone between the headline and download copy on mobile. */
+@media(max-width:760px){
+ .hero-world{display:grid;grid-template-columns:minmax(0,1fr);grid-template-areas:"headline" "scene" "description" "actions" "cue";height:auto;padding-top:104px}
+ .world-copy{display:contents}
+ .world-copy h1{grid-area:headline;margin-inline:20px}
+ .world-copy h1{font-size:clamp(24px,7.8vw,46px)}
+ .object-scene{grid-area:scene;position:relative;top:auto;left:calc(50% - 750.67448px);width:1136px;height:550px;margin-top:24px;overflow:clip}
+ .scene-photo{position:absolute;left:0;top:-88px;width:100%;height:757.333333px;mask-image:linear-gradient(to bottom,transparent 88px,#000 168px)}
+ .hero-device.device-frame{top:30.901333px}
+ .recording-toggle{top:490px}
+ .world-copy>p{grid-area:description;width:calc(100% - 40px);max-width:32ch;margin:24px 20px 0}
+ .world-actions{grid-area:actions;margin:22px 20px 0}
+ .scroll-cue{grid-area:cue;position:static;justify-self:center;transform:none;margin:20px 0 16px}
+ [data-theme=chill] .hero-world{background:linear-gradient(var(--paper) 220px,var(--hero-ground) 779px)}
+}
+
+/* Brief opening mark; the phone recording starts after it clears. */
+:root{--intro-gradient:linear-gradient(100deg,#465abb,#f3e66c 68%,#fffdf6)}
+:root[data-theme=green]{--intro-gradient:linear-gradient(100deg,#27a693,#d4ed8e 68%,#fffdf6)}
+:root[data-theme=chill]{--intro-gradient:linear-gradient(100deg,#989146,#dc9369 68%,#fbf3e7)}
+.site-intro{display:none}
+.is-entering .site-intro{position:fixed;z-index:100;inset:0;display:grid;place-items:center;background:#000;animation:intro-clear 1.1s ease-out forwards}
+.site-intro span{font-family:Nowhere,Onest,sans-serif;font-weight:400;font-size:clamp(40px,8vw,84px);line-height:1;letter-spacing:-.035em;color:#fffdf6;background:var(--intro-gradient);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:intro-mark .35s ease-out both}
+@keyframes intro-mark{from{opacity:0}to{opacity:1}}
+@keyframes intro-clear{0%,78%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden;pointer-events:none}}
+@media(prefers-reduced-motion:reduce){.is-entering .site-intro{display:none}}
 
 /* Supplied music stays upright on the shared ground, below each complete sheet. */
 .day-music{margin-top:24px;text-align:left;color:var(--ink);font-size:14px;line-height:21px}

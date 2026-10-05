@@ -19,12 +19,16 @@
     showPoster();
   };
   async function sync() {
-    if (finished || userPaused || (reducedMotion.matches && !manual) || !visible || document.hidden) {
+    if (window.NowhereIntro?.done === false || finished || userPaused || (reducedMotion.matches && !manual) || !visible || document.hidden) {
       pause(); return;
     }
     if (!video.paused) return;
     if (!video.src) video.src = window.NowhereTheme.current().video;
     const request = ++attempt;
+    // The native launch starts on black. Reveal it before requesting playback
+    // so browsers that gate inline playback on visibility can start the intro.
+    video.hidden = false;
+    poster.hidden = true;
     try {
       await video.play();
       if (request !== attempt || finished || userPaused || !visible || document.hidden) {
@@ -76,6 +80,7 @@
     }
   });
   document.addEventListener('visibilitychange', sync);
+  window.addEventListener('nowhere:intro-ended', sync);
   new IntersectionObserver(entries => {
     visible = entries[0].isIntersecting;
     sync();

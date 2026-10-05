@@ -5,4 +5,6 @@
   document.documentElement.dataset.theme = theme;
   const colors = { green: '#e5efda', yellow: '#f1edc5', chill: '#f4e8d8' };
   document.querySelector('meta[name="theme-color"]').content = colors[theme];
+  window.NowhereIntro = { done: false };
+  document.documentElement.classList.add('is-entering');
 })();
