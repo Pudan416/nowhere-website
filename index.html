@@ -1,656 +1,217 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Nowhere — your days are full of color, even online</title>
-<meta name="description" content="Your days are full of color, even when you live online. Nowhere turns the real parts of your day into color, and that color is what opens your feed." />
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
-<link rel="apple-touch-icon" href="assets/apple-touch-icon.png" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&display=swap" rel="stylesheet" />
-<style>
-  :root{
-    /* light, warm theme — the page should feel like the app's canvas: alive, warm, readable */
-    --paper:#F5EFE6;              /* warm base, matches the gradient's base fill (no flash) */
-    --ink:#1b1a16;               /* primary text */
-    --ink-soft:rgba(27,26,22,.72);
-    --ink-mute:rgba(27,26,22,.52);
-    --line:rgba(27,26,22,.12);
-    --amber:#E08A34;             /* the app's "color" droplet — the warm action accent */
-    --gold:#F5CB47;              /* the app's bright chip yellow — the "color" currency */
-    --night:#0E1726;             /* the app's own dark feed screen — the showcase panel */
-    --night-ink:#F3EEE4;         /* warm paper text on night */
-    --night-mute:rgba(243,238,228,.6);
-    --cream:#FBF7F0;             /* calm reading surface that floats over the gradient */
-    --maxw:1080px;
-    --pad:clamp(20px,5vw,40px);
-    /* three voices: Bricolage (display personality) · SF (body) · SF Mono (the counted day) */
-    --display:"Bricolage Grotesque",-apple-system,BlinkMacSystemFont,system-ui,sans-serif;
-    --ui:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text",system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
-    --mono:ui-monospace,"SF Mono","SFMono-Regular",Menlo,"Cascadia Mono",Consolas,monospace;
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{
-    background:var(--paper);color:var(--ink);
-    font:400 18px/1.6 var(--ui);
-    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
-  }
-  a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--maxw);margin:0 auto;padding-inline:var(--pad)}
-  /* eyebrows carry the signature: a bead of "color" (the app's currency) + a measured, mono voice */
-  .kicker,.tk-lead{display:inline-flex;align-items:center;gap:.62em;font:500 11.5px/1 var(--mono);
-                   letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute)}
-  .kicker::before,.tk-lead::before{content:"";width:7px;height:7px;border-radius:50%;flex:none;
-    background:radial-gradient(circle at 34% 30%,#FFDFA0,var(--amber) 72%);box-shadow:0 0 9px rgba(224,138,52,.5)}
-
-  /* living, morphing gradient — softly cross-fades through different palettes (see script) */
-  .bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none;display:block}
-  header.hero, section, footer, nav{position:relative;z-index:1}
-
-  /* nav — sits at the top of the page and scrolls away with it */
-  nav{position:relative;z-index:10}
-  .nav-inner{display:flex;align-items:center;justify-content:space-between;height:64px}
-  .logo{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;letter-spacing:.1em;font-size:17px}
-  .logo img{width:24px;height:24px;border-radius:6px}
-  .appstore-badge{display:inline-block;line-height:0;transition:transform .15s ease,opacity .15s ease}
-  .appstore-badge:hover{transform:translateY(-1px);opacity:.9}
-  .appstore-badge img{display:block;width:auto}
-  .nav-right .appstore-badge img{height:34px}
-
-  /* hero */
-  header.hero{padding:clamp(52px,11vh,112px) 0 clamp(36px,8vh,80px)}
-  /* hero grid: the headline spans the top full-width; the phone floats top-right beside it,
-     its top edge pinned to the headline's first line; the copy sits under the headline (left). */
-  header.hero .wrap{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;
-                    column-gap:clamp(28px,6vw,72px);align-items:start}
-  h1{grid-column:1/-1;grid-row:1;font-family:var(--display);font-size:clamp(30px,5vw,54px);line-height:1.46;font-weight:800;letter-spacing:-.025em;
-     margin:0 0 clamp(20px,3.2vh,32px)}
-  .hline{display:block;white-space:nowrap}   /* full-width headline → three lines on desktop */
-  .hero-lower{grid-column:1;grid-row:2}
-  .hero-sub{max-width:38ch;margin:0;color:var(--ink-soft);font-size:clamp(18px,2.4vw,24px);line-height:1.5}
-  /* headline pills — echo the app's feed chips (golden fill + frosted white) */
-  /* headline pills = the app's frosted feed chips: partially transparent glass, the gradient shows through */
-  .pill{display:inline-block;border-radius:999px;padding:.14em .52em;line-height:1;
-        vertical-align:baseline;white-space:nowrap;margin:0 .04em;
-        -webkit-backdrop-filter:blur(8px) saturate(1.3);backdrop-filter:blur(8px) saturate(1.3)}
-  .pill-white{background:linear-gradient(150deg,rgba(255,255,255,.5),rgba(255,255,255,.22));color:#201e17;
-              box-shadow:0 4px 18px rgba(60,40,20,.1),inset 0 0 0 1px rgba(255,255,255,.5),inset 0 1px 0 rgba(255,255,255,.66)}
-  .pill-yellow{background:linear-gradient(150deg,rgba(249,214,92,.9),rgba(238,190,60,.58));color:#241d04;
-               box-shadow:0 4px 18px rgba(224,160,50,.28),inset 0 0 0 1px rgba(255,242,198,.55),inset 0 1px 0 rgba(255,248,214,.6)}
-  /* cycling word in the yellow pill — gentle cross-fade, width morphs to fit, loops forever */
-  .swap{display:inline-block;text-align:center;font-weight:inherit;
-        transition:opacity .38s ease,min-width .5s cubic-bezier(.4,0,.2,1)}
-  .swap.out{opacity:0}
-  @media(prefers-reduced-motion:reduce){ .swap{transition:none} }
-  .cta-row{margin-top:32px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
-  .hero .appstore-badge img{height:54px}
-
-  /* hero phone — the screencast mapped onto the real iPhone 17 Pro Max mockup's tilted screen.
-     The video sits behind the transparent-screen PNG; JS applies a matrix3d homography (see script). */
-  .hero-phone{grid-column:2;grid-row:1/-1;align-self:start;justify-self:end;display:flex;justify-content:center;align-items:flex-start}
-  .hero-phone .frame{width:100%;max-width:330px;filter:drop-shadow(0 34px 58px rgba(60,40,20,.32))}
-  .mockup{position:relative;width:100%;overflow:hidden}
-  .mockup-frame{display:block;width:100%;height:auto;position:relative;z-index:2;pointer-events:none}
-  .mockup-screen{position:absolute;top:0;left:0;z-index:1;transform-origin:0 0;background:#0b0c1e;
-                 will-change:transform;opacity:0;transition:opacity .35s ease}
-  /* below this width the full-width headline would run into the top-aligned phone,
-     so the hero stacks (headline → copy → phone centered) instead */
-  @media(max-width:980px){
-    header.hero .wrap{display:block}           /* stack: headline, copy, phone */
-    .hline{white-space:normal}                 /* let the headline reflow on small screens */
-    h1{text-align:center;margin-bottom:clamp(22px,4vh,34px)}
-    .hero-lower{text-align:center}
-    .hero-sub{margin-inline:auto}
-    .cta-row{justify-content:center}
-    .hero-phone{margin-top:14px;justify-self:auto;justify-content:center}  /* reset grid-only right-align so it fills & centers */
-    .hero-phone .frame{max-width:230px;transform:rotate(3deg)}
-  }
-
-  /* worldwide — an interactive bar chart of daily screen time across places */
-  .stats{position:relative;z-index:1;background:var(--cream);
-         border-radius:clamp(22px,4vw,40px) clamp(22px,4vw,40px) 0 0;
-         padding:clamp(52px,10vh,110px) 0 clamp(20px,3vh,32px);text-align:center}
-  .stats .wrap{max-width:820px}
-  .tk-lead{margin-bottom:clamp(34px,6vh,52px)}
-  /* the chart: a row of columns rising to each place's daily hours; hover/tap for detail */
-  .chart{position:relative;display:flex;align-items:stretch;justify-content:center;gap:clamp(5px,1.8vw,18px);
-         height:clamp(220px,34vh,320px)}
-  /* each bar is a button — focusable, tappable; reset native chrome */
-  .bar{flex:1 1 0;max-width:74px;min-width:0;display:flex;flex-direction:column;align-items:center;
-       border:0;background:none;padding:0;font:inherit;color:inherit;cursor:pointer;
-       transition:transform .18s cubic-bezier(.2,.7,.2,1)}
-  .bar:hover,.bar.is-active{transform:translateY(-4px)}
-  .bar-col{flex:1;width:100%;display:flex;flex-direction:column;justify-content:flex-end;align-items:center}
-  .bar-val{font:600 clamp(10px,1.5vw,12.5px)/1 var(--mono);color:var(--ink-soft);margin-bottom:9px;
-           font-variant-numeric:tabular-nums;white-space:nowrap;transition:color .18s ease}
-  .bar-fill{width:clamp(20px,4.6vw,44px);border-radius:8px 8px 3px 3px;
-            background:linear-gradient(180deg,var(--gold),var(--amber));
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.32),0 4px 14px rgba(224,138,52,.22);
-            transition:filter .18s ease,box-shadow .18s ease}
-  .bar:hover .bar-fill,.bar.is-active .bar-fill{filter:saturate(1.12) brightness(1.04);
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.4),0 8px 20px rgba(224,138,52,.34)}
-  .bar:hover .bar-val,.bar.is-active .bar-val{color:var(--ink)}
-  /* worker bars — a different, deeper accent: "all screens", and it's even more */
-  .bar.is-work .bar-fill{background:linear-gradient(180deg,#F2A25A,#D2612B);
-            box-shadow:inset 0 0 0 1px rgba(255,255,255,.28),0 4px 14px rgba(200,90,40,.26)}
-  .bar-flag{margin-top:12px;font-size:clamp(17px,3vw,23px);line-height:1}
-  .bar-name{margin-top:6px;font:500 clamp(9px,1.3vw,10.5px)/1.2 var(--mono);letter-spacing:.01em;
-            color:var(--ink-mute);text-align:center;white-space:nowrap;transition:color .18s ease}
-  .bar:hover .bar-name,.bar.is-active .bar-name{color:var(--ink-soft)}
-  /* floating tooltip — pops above the hovered/tapped bar */
-  .chart-tip{position:absolute;left:0;top:0;transform:translate(-50%,-100%);pointer-events:none;
-             background:var(--night);color:var(--night-ink);border-radius:12px;padding:8px 13px;
-             box-shadow:0 12px 28px rgba(27,26,22,.26);opacity:0;transition:opacity .16s ease;
-             z-index:6;text-align:center;white-space:nowrap}
-  .chart-tip.on{opacity:1}
-  .chart-tip b{display:block;font:700 13.5px/1.25 var(--ui)}
-  .chart-tip span{display:block;margin-top:2px;font:400 11px/1.3 var(--mono);color:var(--night-mute)}
-  /* bars rise on scroll-in, gently staggered */
-  .reveal-js .stats .bar-fill{transform:scaleY(0);transform-origin:bottom;
-                              transition:transform .7s cubic-bezier(.2,.7,.2,1)}
-  .reveal-js .stats.in .bar-fill{transform:scaleY(1)}
-  .reveal-js .stats .bar:nth-child(2) .bar-fill{transition-delay:.04s}
-  .reveal-js .stats .bar:nth-child(3) .bar-fill{transition-delay:.08s}
-  .reveal-js .stats .bar:nth-child(4) .bar-fill{transition-delay:.12s}
-  .reveal-js .stats .bar:nth-child(5) .bar-fill{transition-delay:.16s}
-  .reveal-js .stats .bar:nth-child(6) .bar-fill{transition-delay:.2s}
-  .reveal-js .stats .bar:nth-child(7) .bar-fill{transition-delay:.24s}
-  .reveal-js .stats .bar:nth-child(8) .bar-fill{transition-delay:.28s}
-  .reveal-js .stats .bar:nth-child(9) .bar-fill{transition-delay:.32s}
-  .reveal-js .stats .bar:nth-child(10) .bar-fill{transition-delay:.36s}
-  @media(prefers-reduced-motion:reduce){ .reveal-js .stats .bar-fill{transition:none;transform:none} }
-  .stats-note{margin-top:clamp(22px,4vh,34px);font:400 12px/1.5 var(--mono);letter-spacing:.02em;color:var(--ink-mute)}
-  .stats-note a{border-bottom:1px solid var(--line)}
-  .stats-hint{margin-top:6px;font:400 11px/1.4 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-mute);opacity:.7}
-  .stats-msg{margin:clamp(30px,5vh,46px) auto 0;max-width:32ch;font-family:var(--display);
-             font-size:clamp(19px,2.1vw,25px);line-height:1.44;font-weight:500;letter-spacing:-.01em;color:var(--ink-soft)}
-  /* narrow screens: 10 bars → lean on the flags, hide names (the tooltip names them on tap) */
-  @media(max-width:560px){ .chart{gap:3px} .bar-flag{font-size:15px;margin-top:9px} .bar-name{display:none}
-    .bar-val{font-size:9.5px} .chart-tip{white-space:normal;max-width:60vw} }
-
-  /* storyline — pinned vertical scrollytelling: a constant-size block. Scrolling advances the
-     phones one by one, the left text slides in, and the background gradient shifts per step. */
-  .story{position:relative;z-index:1}
-  .story-track{position:relative;height:calc(4 * 76vh)}          /* scroll distance for the 4 steps */
-  .story-stage{position:sticky;top:0;height:100vh;min-height:620px;display:flex;align-items:center;
-               overflow:hidden;color:#fff;background:linear-gradient(160deg,#1E2A52,#0E1428)}
-  .story-inner{display:grid;grid-template-columns:1fr 1fr;gap:clamp(28px,5vw,72px);align-items:center;width:100%}
-  .story .kicker{color:rgba(255,255,255,.62)}
-  .story-title{font-family:var(--display);font-size:clamp(24px,3.2vw,38px);font-weight:800;
-               letter-spacing:-.025em;color:#fff;margin:12px 0 clamp(26px,4.5vh,44px)}
-  /* left text: stacked steps, only the active one shows — sliding in from the left */
-  .story-steps{position:relative;min-height:136px}
-  .story-step{position:absolute;inset:0;opacity:0;transform:translateX(-30px);pointer-events:none;
-              transition:opacity .5s ease,transform .55s cubic-bezier(.2,.7,.2,1)}
-  .story-step.is-active{opacity:1;transform:none;pointer-events:auto}
-  .story-step .beat-num{display:block;font:700 13px/1 var(--mono);letter-spacing:.16em;color:var(--gold);
-                        margin-bottom:14px;font-variant-numeric:tabular-nums}
-  .story-step .beat-title{font-family:var(--display);font-size:clamp(23px,2.8vw,32px);font-weight:700;
-                          line-height:1.08;letter-spacing:-.02em;color:#fff}
-  .story-step .beat-text{margin-top:12px;font-size:clamp(15px,1.8vw,18px);line-height:1.5;color:rgba(255,255,255,.8);max-width:32ch}
-  .story-dots{display:flex;gap:10px;margin-top:clamp(30px,5vh,50px)}
-  .story-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);transition:background .3s,transform .3s}
-  .story-dot.on{background:#fff;transform:scale(1.3)}
-  /* right media: stacked phones, active one shown, crossfading */
-  .story-media{position:relative;width:100%;height:min(80vh,640px);display:flex;align-items:center;justify-content:center}
-  .story-phone{position:absolute;max-height:100%;width:auto;max-width:100%;
-               opacity:0;transform:translateY(30px) scale(.965);
-               transition:opacity .55s ease,transform .65s cubic-bezier(.2,.7,.2,1);
-               filter:drop-shadow(0 30px 52px rgba(0,0,0,.42))}
-  .story-phone.is-active{opacity:1;transform:none}
-  @media(max-width:820px){
-    .story-track{height:calc(4 * 72vh)}
-    .story-stage{min-height:560px}
-    .story-inner{grid-template-columns:1fr;gap:clamp(14px,3vh,26px);justify-items:center;text-align:center}
-    .story-media{order:-1;height:min(46vh,400px)}
-    .story-title{text-align:center}
-    .story-steps{min-height:108px;width:100%}
-    .story-step{transform:translateY(18px)}
-    .story-step.is-active{transform:none}
-    .story-dots{justify-content:center}
-  }
-  @media(prefers-reduced-motion:reduce){ .story-step,.story-phone,.story-stage{transition:none} }
-
-  /* research — claim (left) + evidence (right): a structured editorial block */
-  .why{position:relative;z-index:1;background:var(--cream);padding:clamp(24px,5vh,56px) 0 clamp(52px,10vh,104px)}
-  .why .wrap{max-width:940px}
-  .why-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:clamp(24px,4.5vw,52px);align-items:start;text-align:left}
-  .why-title{font-family:var(--display);font-size:clamp(24px,3.1vw,35px);font-weight:700;line-height:1.08;letter-spacing:-.02em;margin-top:12px;max-width:15ch}
-  .why-body{margin:18px 0 0;font-size:clamp(15px,1.7vw,16.5px);line-height:1.62;color:var(--ink-soft)}
-  .why-body + .why-body{margin-top:14px}
-  .why-evidence{padding-top:6px;border-left:1px solid var(--line);padding-left:clamp(26px,4vw,48px)}
-  .evidence-label{font:500 11px/1 var(--mono);letter-spacing:.2em;text-transform:uppercase;color:var(--ink-mute);margin-bottom:12px}
-  .proof{display:flex;flex-direction:column}
-  .proof-row{padding:16px 0;border-top:1px solid var(--line);font-size:15.5px;line-height:1.5}
-  .proof-row:last-child{border-bottom:1px solid var(--line)}
-  .proof-row b{font-weight:600}
-  .proof-row .cite{display:block;margin-top:5px;font:400 12px/1.4 var(--mono);letter-spacing:.01em;color:var(--ink-mute)}
-  .why-foot{margin:18px 0 0;font-size:13.5px;line-height:1.5;color:var(--ink-mute);max-width:34ch}
-  @media(max-width:760px){ .why-grid{grid-template-columns:1fr;gap:26px} .why-evidence{border-left:0;padding-left:0} }
-
-  /* maker — short + personal: text on the left, a vertical portrait on the right */
-  .note{padding:clamp(44px,9vh,96px) 0 clamp(16px,3vh,32px)}
-  .note .wrap{max-width:860px}
-  .maker-grid{display:grid;grid-template-columns:1fr auto;gap:clamp(28px,5vw,60px);align-items:center;text-align:left}
-  .note .kicker{margin-bottom:22px}
-  /* transparent-cutout portrait: floats free, with the hard bottom edge faded into the background */
-  .note .portrait{width:clamp(190px,27vw,270px);height:auto;object-fit:contain;justify-self:end;align-self:end;
-                  filter:drop-shadow(0 20px 30px rgba(27,26,22,.18));
-                  -webkit-mask-image:linear-gradient(to bottom,#000 68%,transparent 96%);
-                  mask-image:linear-gradient(to bottom,#000 68%,transparent 96%)}
-  .note p{color:var(--ink-soft);font-size:clamp(16px,2vw,19px);line-height:1.62}
-  .note p + p{margin-top:18px}
-  .note a.write{color:var(--ink);border-bottom:1px solid var(--amber);padding-bottom:1px;transition:opacity .2s}
-  .note a.write:hover{opacity:.75}
-  .note .sign-off{font-family:var(--display);font-weight:700;font-size:clamp(19px,2.4vw,23px);color:var(--ink);margin-top:24px}
-  .note .cta-row{justify-content:flex-start}
-  @media(max-width:640px){
-    .maker-grid{grid-template-columns:1fr;justify-items:center;text-align:center}
-    .note .portrait{grid-row:1;justify-self:center;margin-bottom:8px}
-    .note .cta-row{justify-content:center}
-  }
-
-  /* footer */
-  footer{padding:34px 0;color:var(--ink-mute);border-top:1px solid var(--line);margin-top:clamp(32px,6vh,64px);
-         font:400 12px/1.6 var(--mono);letter-spacing:.04em}
-  .foot-inner{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:center}
-  .foot-links{display:flex;gap:22px;flex-wrap:wrap}
-  .foot-links a{text-transform:uppercase;letter-spacing:.14em;transition:color .2s}
-  .foot-links a:hover{color:var(--ink)}
-
-  /* scroll reveal — subtle; on a light page a mid-transition never leaves a dark void */
-  .reveal-js .reveal{opacity:0;transform:translateY(22px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
-  .reveal-js .reveal.in{opacity:1;transform:none}
-  @media(prefers-reduced-motion:reduce){
-    .reveal-js .reveal{opacity:1;transform:none;transition:none}
-  }
-
-  /* quality floor: always show keyboard focus (the ticker face sets outline:none) */
-  a:focus-visible,button:focus-visible,.tk-face:focus-visible{outline:2px solid var(--amber);outline-offset:3px;border-radius:6px}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f1edc5">
+  <meta name="description" content="A canvas of your day. Choose the little things you lived, see them take shape, and discover the patterns already in your life.">
+  <meta property="og:title" content="Nowhere — A canvas of your day">
+  <meta property="og:description" content="Notice the little things. Give your day a picture.">
+  <link rel="canonical" href="https://nowhere.pudan.me/">
+  <meta property="og:url" content="https://nowhere.pudan.me/">
+  <title>Nowhere — A canvas of your day</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/Onest-Regular.ttf" as="font" type="font/ttf" crossorigin>
+  <script src="theme-init.js?v=day17"></script>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="revision.css?v=day27">
+  <script src="themes.js?v=day16" defer></script>
+  <script src="hero.js?v=day16" defer></script>
+  <script src="colors-help.js?v=day8" defer></script>
+  <script src="diary-preview.js?v=day16" defer></script>
+  <script src="supplied-music.js?v=day27" defer></script>
 </head>
-<body id="top">
-
-<canvas class="bg-canvas" id="bgCanvas" aria-hidden="true"></canvas>
-
-<nav>
-  <div class="wrap nav-inner">
-    <a class="logo" href="#top"><img src="assets/app-icon.png" alt="" />NOWHERE</a>
-    <div class="nav-right">
-      <a class="appstore-badge" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" aria-label="Download Nowhere on the App Store"><img src="assets/appstore-badge.svg" alt="Download on the App Store" /></a>
-    </div>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<header class="site-header wrap">
+  <a class="wordmark" href="#top" aria-label="Nowhere home">NOWHERE</a>
+  <div class="theme-selector" role="group" aria-label="Website colors">
+    <button type="button" data-theme-choice="green" aria-label="Green colors" aria-pressed="false"><span class="theme-swatch green-swatch" aria-hidden="true"></span></button>
+    <button type="button" data-theme-choice="yellow" aria-label="Yellow colors" aria-pressed="true"><span class="theme-swatch yellow-swatch" aria-hidden="true"></span></button>
+    <button type="button" data-theme-choice="chill" aria-label="Chill colors" aria-pressed="false"><span class="theme-swatch chill-swatch" aria-hidden="true"></span></button>
   </div>
-</nav>
-
-<header class="hero">
-  <div class="wrap">
-    <h1><span class="hline">Even if you live <span class="pill pill-white">online</span>,</span><span class="hline">your days are still filled</span><span class="hline pill-line">with <span class="pill pill-yellow"><span class="swap" id="swap">colors</span></span></span></h1>
-    <div class="hero-lower">
-      <div class="hero-copy">
-        <p class="hero-sub">Nowhere turns the real parts of your day into color — and that color is what opens your feed. Backed by science.</p>
-        <div class="cta-row">
-          <a class="appstore-badge" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" aria-label="Download Nowhere on the App Store"><img src="assets/appstore-badge.svg" alt="Download on the App Store" /></a>
-        </div>
-      </div>
-    </div>
-    <div class="hero-phone" aria-hidden="true">
-      <div class="frame">
-        <div class="mockup">
-          <video class="mockup-screen" src="assets/screencast.mp4" poster="assets/screencast-poster.jpg" autoplay muted loop playsinline preload="auto"></video>
-          <img class="mockup-frame" src="assets/iPhone Mockup.png" alt="" />
-        </div>
-      </div>
-    </div>
-  </div>
+  <span id="theme-status" class="sr-only" role="status"></span>
 </header>
-
-<section class="stats reveal" id="worldwide">
-  <div class="wrap">
-    <p class="tk-lead">time on a screen, every day</p>
-    <div class="chart" role="group" aria-label="Average daily screen time. Remote workers about 13 hours, office workers about 10 hours (all screens); then by country, ages 16–64: South Africa 9h24m, Brazil 9h13m, Philippines 8h52m, United States 7h03m, United Kingdom 6h02m, Netherlands 5h30m, Germany 5h22m, Japan 3h56m.">
-      <button class="bar is-work" type="button" data-place="Remote workers" data-time="~13h" data-note="all screens" aria-label="Remote workers, about 13 hours a day, all screens"><div class="bar-col"><span class="bar-val">~13h</span><span class="bar-fill" style="height:95%"></span></div><span class="bar-flag">🏠</span><span class="bar-name">Remote</span></button>
-      <button class="bar is-work" type="button" data-place="Office workers" data-time="~10h" data-note="all screens" aria-label="Office workers, about 10 hours a day, all screens"><div class="bar-col"><span class="bar-val">~10h</span><span class="bar-fill" style="height:73%"></span></div><span class="bar-flag">💼</span><span class="bar-name">Office</span></button>
-      <button class="bar" type="button" data-place="South Africa" data-time="9h 24m" data-note="ages 16–64" aria-label="South Africa, 9 hours 24 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">9h24</span><span class="bar-fill" style="height:69%"></span></div><span class="bar-flag">🇿🇦</span><span class="bar-name">S. Africa</span></button>
-      <button class="bar" type="button" data-place="Brazil" data-time="9h 13m" data-note="ages 16–64" aria-label="Brazil, 9 hours 13 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">9h13</span><span class="bar-fill" style="height:67%"></span></div><span class="bar-flag">🇧🇷</span><span class="bar-name">Brazil</span></button>
-      <button class="bar" type="button" data-place="Philippines" data-time="8h 52m" data-note="ages 16–64" aria-label="Philippines, 8 hours 52 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">8h52</span><span class="bar-fill" style="height:65%"></span></div><span class="bar-flag">🇵🇭</span><span class="bar-name">Philipp.</span></button>
-      <button class="bar" type="button" data-place="United States" data-time="7h 03m" data-note="ages 16–64" aria-label="United States, 7 hours 3 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">7h03</span><span class="bar-fill" style="height:52%"></span></div><span class="bar-flag">🇺🇸</span><span class="bar-name">USA</span></button>
-      <button class="bar" type="button" data-place="United Kingdom" data-time="6h 02m" data-note="ages 16–64" aria-label="United Kingdom, 6 hours 2 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">6h02</span><span class="bar-fill" style="height:44%"></span></div><span class="bar-flag">🇬🇧</span><span class="bar-name">UK</span></button>
-      <button class="bar" type="button" data-place="Netherlands" data-time="5h 30m" data-note="ages 16–64" aria-label="Netherlands, 5 hours 30 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">5h30</span><span class="bar-fill" style="height:40%"></span></div><span class="bar-flag">🇳🇱</span><span class="bar-name">Neth.</span></button>
-      <button class="bar" type="button" data-place="Germany" data-time="5h 22m" data-note="ages 16–64" aria-label="Germany, 5 hours 22 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">5h22</span><span class="bar-fill" style="height:39%"></span></div><span class="bar-flag">🇩🇪</span><span class="bar-name">Germany</span></button>
-      <button class="bar" type="button" data-place="Japan" data-time="3h 56m" data-note="ages 16–64" aria-label="Japan, 3 hours 56 minutes a day, ages 16 to 64"><div class="bar-col"><span class="bar-val">3h56</span><span class="bar-fill" style="height:29%"></span></div><span class="bar-flag">🇯🇵</span><span class="bar-name">Japan</span></button>
-      <div class="chart-tip" id="chartTip" role="status" aria-live="polite" aria-hidden="true"></div>
-    </div>
-    <p class="stats-hint">hover or tap a bar</p>
-    <p class="stats-note">Daily screen time · workers: all screens · countries: ages 16–64 · Sources: DataReportal, 2026 · All About Vision</p>
-    <p class="stats-msg">The problem isn't the hours. It's the real moments you stop noticing — until every day feels like the last.</p>
-  </div>
-</section>
-
-<section class="why reveal">
-  <div class="wrap why-grid">
-    <div class="why-head">
-      <p class="kicker">the science</p>
-      <h2 class="why-title">What you really remember</h2>
-      <p class="why-body">Your brain keeps what you actually notice. Moments of real attention get saved as memory; autopilot scrolling mostly doesn't. That's how a whole week can pass without one thing you'd point to and call good.</p>
-      <p class="why-body">Give a real moment even a few seconds of genuine attention and it lands — it's still there tomorrow. That's the part that stays.</p>
-    </div>
-    <aside class="why-evidence">
-      <p class="evidence-label">the research</p>
-      <div class="proof">
-        <div class="proof-row"><b>Depth beats time.</b> The more attention a moment gets, the stronger the memory it leaves.<span class="cite">Craik &amp; Lockhart, 1972</span></div>
-        <div class="proof-row"><b>You keep what you attend to.</b> Attention is the gate to memory.<span class="cite">Chun &amp; Turk-Browne, 2007</span></div>
+<main id="main">
+  <section class="hero-world" id="top" aria-labelledby="hero-title">
+    <div class="object-scene">
+      <img class="scene-photo" src="assets/hero-blue-gold-v12.png" width="1536" height="1024" alt="A blue and yellow still life with a phone, coffee, a croissant, water and sunglasses" fetchpriority="high">
+      <div class="hero-device device-frame">
+      <div class="phone-display device-screen" id="hero-display">
+        <img id="hero-poster" src="assets/hero-yellow-final-v14.png" width="576" height="1280" alt="A Nowhere Canvas with blue, gold and teal rays for a hangover, coffee and lunch">
+        <video id="hero-video" muted playsinline preload="none" hidden aria-label="Nowhere launch, empty Canvas, three moments selected, app unlocked, then the yellow Canvas"></video>
+        <span class="phone-island" aria-hidden="true"></span>
       </div>
-      <p class="why-foot">Nowhere is a nudge, not therapy. It just makes noticing the easy part.</p>
-    </aside>
-  </div>
-</section>
+      <img class="device-artwork" src="assets/iphone-17-pro-silver.png" width="1350" height="2760" alt="" aria-hidden="true">
+      </div>
+      <button class="recording-toggle" id="hero-playback" type="button" aria-controls="hero-video" aria-label="Play video" hidden><span>Play video</span></button>
+    </div>
+    <div class="world-copy">
+      <h1 id="hero-title"><span>Notice more <strong>NOW.</strong></span><span>Be more <strong>HERE.</strong></span></h1>
+      <p>Nowhere is a free visual diary for iPhone. Choose the moments you lived. See your day take shape, and hear it in music.</p>
+      <div class="world-actions"><a class="store-badge " href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" aria-label="Download Nowhere on the App Store"><svg viewBox="0 0 26 30" aria-hidden="true"><path d="M17 5c1-1 2-3 2-5-2 0-4 1-5 2-1 1-2 3-2 5 2 0 4-1 5-2ZM23 21c-1 3-3 8-6 8-2 0-3-1-5-1s-3 1-5 1C3 28 0 20 0 15 0 10 3 7 7 7c2 0 4 1 5 1s4-2 6-1c2 0 4 1 6 3-6 3-4 9-1 11Z"/></svg><span><small>Download on the</small><strong>App Store</strong></span></a></div>
+    </div>
+    <a class="scroll-cue" href="#manifesto-title" aria-label="Discover Nowhere"><svg viewBox="0 0 30 48" aria-hidden="true"><path d="M15 2v42M3 32l12 12 12-12"/></svg></a>
+  </section>
 
-<section class="story" id="how">
-  <div class="story-track" id="storyTrack">
-    <div class="story-stage" id="storyStage">
-      <div class="wrap story-inner">
-        <div class="story-text">
-          <p class="kicker">how it works</p>
-          <h2 class="story-title">One day, start to finish</h2>
-          <div class="story-steps" id="storySteps">
-            <article class="story-step is-active"><span class="beat-num">01</span><h3 class="beat-title">Morning, uncolored</h3><p class="beat-text">The day starts blank — nothing earned yet.</p></article>
-            <article class="story-step"><span class="beat-num">02</span><h3 class="beat-title">Real life fills it</h3><p class="beat-text">Every activity you log becomes color.</p></article>
-            <article class="story-step"><span class="beat-num">03</span><h3 class="beat-title">Unlock the feed</h3><p class="beat-text">Spend color to open your apps.</p></article>
-            <article class="story-step"><span class="beat-num">04</span><h3 class="beat-title">Time runs out</h3><p class="beat-text">When it's spent, the app locks again.</p></article>
+  <section class="manifesto" aria-labelledby="manifesto-title">
+    <div class="wrap">
+      <h2 id="manifesto-title">You do more<br>than you notice.</h2>
+      <p>A walk. A good laugh. A meal with someone. <br>Small things make a day — and a life.</p>
+    </div>
+  </section>
+
+
+  <section class="clover-section" id="possibilities" aria-labelledby="clover-title">
+    <div class="clover-layout wrap">
+      <div class="clover-intro"><h2 id="clover-title">What Nowhere brings together.</h2></div>
+      <div class="clover-diagram" role="img" aria-label="Nowhere brings together a visual diary, personal art and sound, and an app blocker">
+        <svg viewBox="0 0 640 565" aria-hidden="true"><path d="M146 190a174 174 0 1 0 348 0 174 174 0 1 0-348 0M36 373a174 174 0 1 0 348 0 174 174 0 1 0-348 0M256 373a174 174 0 1 0 348 0 174 174 0 1 0-348 0" fill="none" stroke="currentColor" stroke-width="2"/></svg>
+        <div class="clover-label top"><strong>Visual diary</strong><span>Discover what you<br>already do.</span></div><div class="clover-label left"><strong>Art &amp; sound</strong><span>See and listen<br>to your day.</span></div><div class="clover-label right"><strong>App blocker</strong><span>A pause before<br>you scroll.</span></div><span class="clover-center">NOWHERE</span>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="how-section product-section" id="how" aria-labelledby="how-title">
+    <div class="wrap">
+      <header class="product-heading">
+        <h2 id="how-title">See what filled your day.</h2>
+        <p>Log the moments you lived. See your day take shape.</p>
+      </header>
+      <div class="diary-composition">
+        <div class="diary-moments">
+          <div class="diary-input-caption">
+            <h3>Choose what you did.</h3>
+            <p>Tap a moment. See it take shape.</p>
           </div>
-          <div class="story-dots" id="storyDots" aria-hidden="true"></div>
+          <ul class="moment-examples" aria-label="Choose moments for your Canvas preview">
+            <li><button type="button" data-canvas-moment="first" aria-label="Had a hangover" aria-pressed="false" aria-controls="diary-preview"><svg class="moment-visual" viewBox="-170 -170 340 340" aria-hidden="true"><path class="moment-circle" d="M164 0A164 164 0 1 0-164 0 164 164 0 1 0 164 0Z"/><path class="moment-shape" data-morph-path/></svg><img class="moment-ray" src="assets/ray-hangover-figma.png" alt="" aria-hidden="true" width="1246" height="1130"><span class="moment-label">Had a<br>hangover</span></button></li>
+            <li><button type="button" data-canvas-moment="second" aria-label="Had coffee" aria-pressed="false" aria-controls="diary-preview"><svg class="moment-visual" viewBox="-170 -170 340 340" aria-hidden="true"><path class="moment-circle" d="M164 0A164 164 0 1 0-164 0 164 164 0 1 0 164 0Z"/><path class="moment-shape" data-morph-path/></svg><img class="moment-ray" src="assets/ray-coffee-figma.png" alt="" aria-hidden="true" width="1246" height="1130"><span class="moment-label">Had<br>coffee</span></button></li>
+            <li><button type="button" data-canvas-moment="third" aria-label="Had lunch" aria-pressed="false" aria-controls="diary-preview"><svg class="moment-visual" viewBox="-170 -170 340 340" aria-hidden="true"><path class="moment-circle" d="M164 0A164 164 0 1 0-164 0 164 164 0 1 0 164 0Z"/><path class="moment-shape" data-morph-path/></svg><img class="moment-ray" src="assets/ray-lunch-figma.png" alt="" aria-hidden="true" width="1246" height="1130"><span class="moment-label">Had<br>lunch</span></button></li>
+          </ul>
+          <p class="moment-catalog-note">About 100 more activities in the app.</p>
         </div>
-        <div class="story-media" id="storyMedia">
-          <img class="story-phone is-active" src="assets/1.png" alt="An empty Nowhere canvas in the morning" />
-          <img class="story-phone" src="assets/2.png" alt="A canvas full of the day's real activities" />
-          <img class="story-phone" src="assets/3.png" alt="A few apps unlocked with earned color" />
-          <img class="story-phone" src="assets/4.png" alt="An app blocked once the time runs out" />
+        <figure class="native-example diary-canvas">
+          <div class="capture-frame device-frame">
+            <div class="device-screen diary-demo" id="diary-preview" role="img" aria-labelledby="canvas-preview-title">
+              <img class="demo-backdrop" id="diary-backdrop" src="assets/canvas-demo-base-v12.png" width="841" height="1870" alt="" loading="lazy">
+              <img class="demo-chrome" id="diary-chrome" src="assets/canvas-native-v12.png" width="576" height="1280" alt="" loading="lazy">
+              <svg class="demo-shapes green-forms" viewBox="0 0 1179 2556" aria-hidden="true">
+                <defs>
+                  <radialGradient id="demo-flower" cx=".68" cy=".32" r=".9"><stop stop-color="#eff795"/><stop offset=".55" stop-color="#e9e782"/><stop offset="1" stop-color="#efd294"/></radialGradient>
+                  <linearGradient id="demo-drop" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#a0e5ae" stop-opacity=".68"/><stop offset="1" stop-color="#e3efb0"/></linearGradient>
+                  <filter id="demo-soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation="1.7"/></filter>
+                </defs>
+                <g transform="translate(328 710)"><g class="canvas-demo-form" data-green-form="first" fill="url(#demo-flower)" filter="url(#demo-soft)"><path data-result-path/></g></g>
+                <g transform="translate(590 1278)"><g class="canvas-demo-form" data-green-form="second" filter="url(#demo-soft)"><path data-result-path fill="none" stroke="#e5c0e8" stroke-width="14" stroke-linejoin="round"/></g></g>
+                <g transform="translate(864 1838)"><g class="canvas-demo-form" data-green-form="third" fill="url(#demo-drop)" filter="url(#demo-soft)"><path data-result-path/></g></g>
+              </svg>
+              <svg class="demo-shapes chill-forms" viewBox="0 0 384 848" aria-hidden="true">
+                <defs>
+                  <radialGradient id="demo-chill-orb" cx=".62" cy=".3" r=".73"><stop stop-color="#b8bc75"/><stop offset=".44" stop-color="#d8d593"/><stop offset="1" stop-color="#d7cc8f"/></radialGradient>
+                  <filter id="demo-chill-soft" x="-10%" y="-10%" width="120%" height="120%"><feGaussianBlur stdDeviation=".7"/></filter>
+                </defs>
+                <g transform="translate(210 425) scale(.451852)"><g class="canvas-demo-form" data-chill-form="first"><path data-result-path fill="none" stroke="#ae4259" stroke-width="7" filter="url(#demo-chill-soft)"/></g></g>
+                <g transform="translate(125 237) scale(.451852)"><g class="canvas-demo-form" data-chill-form="second"><path data-result-path fill="none" stroke="#d0cfbb" stroke-width="6" filter="url(#demo-chill-soft)"/></g></g>
+                <g transform="translate(265 588) scale(.451852)"><g class="canvas-demo-form" data-chill-form="third"><path data-result-path fill="url(#demo-chill-orb)" filter="url(#demo-chill-soft)"/></g></g>
+              </svg>
+              <div class="yellow-forms" aria-hidden="true">
+                <div class="ray-position ray-hangover"><img class="canvas-demo-form" data-yellow-form="first" src="assets/ray-hangover-figma.png" width="1246" height="1130" alt=""></div>
+                <div class="ray-position ray-coffee"><img class="canvas-demo-form" data-yellow-form="second" src="assets/ray-coffee-figma.png" width="1246" height="1130" alt=""></div>
+                <div class="ray-position ray-lunch"><img class="canvas-demo-form" data-yellow-form="third" src="assets/ray-lunch-figma.png" width="1246" height="1130" alt=""></div>
+              </div>
+              <span class="phone-island" aria-hidden="true"></span>
+              <span id="canvas-preview-title" class="sr-only">Your Canvas preview. No moments selected.</span>
+            </div>
+            <img class="device-artwork" src="assets/iphone-17-pro-silver.png" width="1350" height="2760" alt="" aria-hidden="true" loading="lazy">
+          </div>
+          <p id="canvas-selection-status" class="sr-only" role="status"></p>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+
+  <section class="optional-section product-section" id="app-time" aria-labelledby="optional-title">
+    <div class="wrap">
+      <header class="product-heading">
+        <h2 id="optional-title">Social time, on your terms.</h2>
+        <p>Choose 10, 30 or 60 minutes. Your apps pause again when time is up.</p>
+      </header>
+      <div class="app-limit-composition">
+        <figure class="native-example limit-before">
+          <div class="capture-frame device-frame"><div class="device-screen"><img src="assets/app-blocked.png" width="1206" height="2622" alt="Blocking screen preview: Instagram is locked by Nowhere, with options to unlock or keep it closed" loading="lazy"></div><img class="device-artwork" src="assets/iphone-17-pro-silver.png" width="1350" height="2760" alt="" aria-hidden="true" loading="lazy"></div>
+          <figcaption><span class="desktop-caption">Apps pause.</span><span class="phone-caption">Before you open it</span><small>Blocking preview</small></figcaption>
+        </figure>
+        <figure class="native-example limit-choice">
+          <div class="capture-frame device-frame"><div class="device-screen recorded-capture"><span class="phone-island" aria-hidden="true"></span><img id="feeds-choice" src="assets/feeds-instagram-choice-v15.png" width="576" height="1280" alt="Choose 10, 30 or 60 minutes to unlock Instagram" loading="lazy"></div><img class="device-artwork" src="assets/iphone-17-pro-silver.png" width="1350" height="2760" alt="" aria-hidden="true" loading="lazy"></div>
+          <figcaption>Choose your time.</figcaption>
+        </figure>
+        <figure class="native-example limit-remaining">
+          <div class="capture-frame device-frame"><div class="device-screen recorded-capture"><span class="phone-island" aria-hidden="true"></span><img id="feeds-active" src="assets/feeds-active-native-v12.png" width="576" height="1280" alt="Nowhere shows unlocked social apps and their remaining time" loading="lazy"></div><img class="device-artwork" src="assets/iphone-17-pro-silver.png" width="1350" height="2760" alt="" aria-hidden="true" loading="lazy"></div>
+          <figcaption><span class="desktop-caption">Time remaining.</span><span class="phone-caption">When it is open</span><small class="phone-caption">Time remaining</small></figcaption>
+        </figure>
+        <button id="colors-help" class="colors-help" type="button" aria-haspopup="dialog" aria-controls="colors-info">How colors work <span aria-hidden="true">+</span></button>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="colors-info" class="colors-dialog" aria-labelledby="colors-title">
+    <div class="colors-dialog-content">
+      <h3 id="colors-title">How colors work</h3>
+      <p>Up to 100 colors a day.</p>
+      <p>Sleep and steps from Apple Health: up to 20 each.</p>
+      <p>10 moments you add to Canvas: up to 60.</p>
+      <p>Spend colors to unlock apps.</p>
+      <form method="dialog"><button type="submit">Close</button></form>
+    </div>
+  </dialog>
+
+  <section class="day-examples-section" id="days" aria-labelledby="days-title">
+    <div class="wrap">
+      <div class="section-heading"><h2 id="days-title">Your day becomes art.<br>And music.</h2><p>Your Happenings, sleep, activity and time in social apps shape your Canvas and sound. <br>Each day gets its own picture and music.</p></div>
+      <div class="day-examples" id="day-examples" tabindex="0" aria-label="Three example day posters">
+        <div class="day-example">
+        <figure class="day-poster example-poster">
+          <img class="supplied-day-poster" src="assets/day-poster-coral-v17.jpeg" width="918" height="1280" loading="lazy" alt="Nowhere day poster with a coral glow and softly blurred triangular forms">
+        </figure>
+        <div class="day-music" data-track="Soft Geometry">
+          <div class="day-music-heading"><span id="01-soft-geometry-title">Soft Geometry</span><button class="day-music-toggle" type="button" aria-label="Play Soft Geometry" aria-pressed="false" hidden>Play</button></div>
+          <audio controls preload="none" aria-labelledby="01-soft-geometry-title" src="assets/01-soft-geometry-v22.m4a"></audio>
+          <div class="day-music-seek" hidden><input type="range" min="0" max="30" step="0.1" value="0" aria-label="Seek in Soft Geometry" aria-valuetext="0:00 of 0:30" disabled><span class="day-music-time" aria-hidden="true">0:00 / 0:30</span></div>
+          <span class="day-music-status" role="status"></span>
+        </div>
+        </div>
+        <div class="day-example">
+        <figure class="day-poster example-poster">
+          <img class="supplied-day-poster" src="assets/day-poster-blue-v17.jpeg" width="918" height="1280" loading="lazy" alt="Nowhere day poster with blue circles and overlapping outlined rings">
+        </figure>
+        <div class="day-music" data-track="Living Circuit">
+          <div class="day-music-heading"><span id="02-living-circuit-title">Living Circuit</span><button class="day-music-toggle" type="button" aria-label="Play Living Circuit" aria-pressed="false" hidden>Play</button></div>
+          <audio controls preload="none" aria-labelledby="02-living-circuit-title" src="assets/02-living-circuit-v22.m4a"></audio>
+          <div class="day-music-seek" hidden><input type="range" min="0" max="30" step="0.1" value="0" aria-label="Seek in Living Circuit" aria-valuetext="0:00 of 0:30" disabled><span class="day-music-time" aria-hidden="true">0:00 / 0:30</span></div>
+          <span class="day-music-status" role="status"></span>
+        </div>
+        </div>
+        <div class="day-example">
+        <figure class="day-poster example-poster">
+          <img class="supplied-day-poster" src="assets/day-poster-peach-v17.jpeg" width="918" height="1280" loading="lazy" alt="Nowhere day poster with softly blurred rounded forms in peach and yellow">
+        </figure>
+        <div class="day-music" data-track="Electric Ritual">
+          <div class="day-music-heading"><span id="03-electric-ritual-title">Electric Ritual</span><button class="day-music-toggle" type="button" aria-label="Play Electric Ritual" aria-pressed="false" hidden>Play</button></div>
+          <audio controls preload="none" aria-labelledby="03-electric-ritual-title" src="assets/03-electric-ritual-v22.m4a"></audio>
+          <div class="day-music-seek" hidden><input type="range" min="0" max="30" step="0.1" value="0" aria-label="Seek in Electric Ritual" aria-valuetext="0:00 of 0:30" disabled><span class="day-music-time" aria-hidden="true">0:00 / 0:30</span></div>
+          <span class="day-music-status" role="status"></span>
+        </div>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="note reveal" id="maker">
-  <div class="wrap maker-grid">
-    <div class="maker-text">
-      <p class="kicker">from the builder</p>
-      <p>Hey — I'm Kosta. I built Nowhere on my own, because my days kept blurring into one and I wanted proof there was more to them than the feed.</p>
-      <p>Give it a try and tell me what you think — I read every message. Just <a class="write" href="mailto:kostill@gmail.com">write to me</a>.</p>
-      <p class="sign-off">— Kosta</p>
-      <div class="cta-row" style="margin-top: 28px;">
-        <a class="appstore-badge" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" target="_blank" rel="noopener" aria-label="Download Nowhere on the App Store"><img src="assets/appstore-badge.svg" alt="Download on the App Store" /></a>
-      </div>
-    </div>
-    <img src="assets/kosta-portrait.png" alt="Kosta" class="portrait" />
-  </div>
-</section>
 
-<footer>
-  <div class="wrap foot-inner">
-    <div>© 2026 Kosta Pudan</div>
-    <div class="foot-links">
-      <a href="mailto:kostill@gmail.com">contact</a>
-      <a href="https://pudan.me/blog" target="_blank" rel="noopener">blog</a>
-      <a href="/privacy.html">privacy</a>
-      <a href="/terms.html">terms</a>
-    </div>
-  </div>
-</footer>
-
-<script>
-  // ── Scroll-tinted background ─────────────────────────────────────────────────
-  // Soft, friendly, branded gradient mesh. It holds still (no time-based morph);
-  // as you scroll, the blob colours interpolate through a sequence of branded
-  // palettes, so each block sits in its own soft gradient and the shift is gentle.
-  // Redraws only while scrolling / resizing; static under prefers-reduced-motion.
-  (function(){
-    var canvas=document.getElementById('bgCanvas'); if(!canvas||!canvas.getContext) return;
-    var ctx=canvas.getContext('2d');
-    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-    var BASE='#F5EFE6';
-    function rgb(h){h=h.replace('#','');return [parseInt(h.substr(0,2),16),parseInt(h.substr(2,2),16),parseInt(h.substr(4,2),16)];}
-    function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
-    function rgba(c,a){return 'rgba('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+','+a+')';}
-    function smooth(t){return t*t*(3-2*t);}
-
-    // soft, friendly, branded palettes — one per stop down the page (hero → footer),
-    // one colour per blob slot (0..5). All light pastels so text stays readable.
-    var BRAND=[
-      ['#FFC290','#FFB795','#FFB09A','#F7C1A0','#FFC28E','#FFBF9C'], // sunrise — warm peach
-      ['#FFA8A2','#FF9EB0','#F2A6C6','#FFA898','#EFA2C0','#FFA695'], // coral · rose (soft, not red)
-      ['#C6ACEA','#BCA6E4','#BEAAE4','#D4C2EE','#C8B8EA','#CCB6EA'], // lavender
-      ['#FFCF8C','#F7C47E','#FFC786','#FBD49C','#FFCE8E','#FFD298'], // gold
-      ['#FFB4AA','#F4A2BE','#EDACD2','#FFB4A6','#F2A2C4','#FFB29E']  // dawn
-    ].map(function(p){return p.map(rgb);});
-    var NB=BRAND.length;
-    function paletteColor(slot,prog){
-      var x=prog*(NB-1), i=Math.floor(x);
-      if(i>=NB-1) return BRAND[NB-1][slot];
-      return mix(BRAND[i][slot], BRAND[i+1][slot], smooth(x-i));
-    }
-
-    // fixed blob layout — a soft radial mesh; positions don't move
-    var blobs=[
-      {x:.16,y:.14,r:.74},{x:.84,y:.10,r:.68},{x:.76,y:.58,r:.74},
-      {x:.26,y:.70,r:.68},{x:.50,y:.40,r:.62},{x:.08,y:.88,r:.62}
-    ];
-
-    var W,H,dpr,prog=0,target=0;
-    function draw(){
-      var maxR=Math.max(W,H);
-      ctx.globalCompositeOperation='source-over';
-      ctx.fillStyle=BASE;ctx.fillRect(0,0,W,H);
-      ctx.globalCompositeOperation='multiply'; // pastel × cream → soft, still light
-      for(var i=0;i<blobs.length;i++){
-        var bl=blobs[i], bx=bl.x*W, by=bl.y*H, r=bl.r*maxR, col=paletteColor(i,prog);
-        var g=ctx.createRadialGradient(bx,by,0,bx,by,r);
-        g.addColorStop(0,rgba(col,0.62));
-        g.addColorStop(0.6,rgba(col,0.28));
-        g.addColorStop(1,rgba(col,0));
-        ctx.fillStyle=g;ctx.fillRect(bx-r,by-r,r*2,r*2);
-      }
-      ctx.globalCompositeOperation='source-over';
-    }
-    function resize(){
-      dpr=Math.min(window.devicePixelRatio||1,1.5);
-      W=window.innerWidth;H=window.innerHeight;
-      canvas.width=Math.round(W*dpr);canvas.height=Math.round(H*dpr);
-      canvas.style.width=W+'px';canvas.style.height=H+'px';
-      ctx.setTransform(dpr,0,0,dpr,0,0);
-      draw();
-    }
-    resize();
-    var rt;window.addEventListener('resize',function(){clearTimeout(rt);rt=setTimeout(resize,150);});
-
-    // each block owns a soft palette; the tint eases toward whichever block is in view
-    var SEC=[];
-    [['header.hero',0],['.stats',1],['.why',2],['.story',3],['.note',4],['footer',4]].forEach(function(s){
-      var el=document.querySelector(s[0]); if(el) SEC.push({el:el,p:s[1]/(NB-1)});
-    });
-    var tw=null;
-    function tick(){
-      prog+=(target-prog)*0.12;
-      if(Math.abs(target-prog)<0.002){ prog=target; draw(); tw=null; return; }
-      draw(); tw=requestAnimationFrame(tick);
-    }
-    function aim(t){ if(t===target) return; target=t; if(reduce){ prog=t; draw(); return; } if(!tw) tw=requestAnimationFrame(tick); }
-    function current(){
-      var mid=window.innerHeight*0.5, pick=SEC.length?SEC[0].p:0;
-      for(var k=0;k<SEC.length;k++){ var rc=SEC[k].el.getBoundingClientRect(); if(rc.top<=mid+1&&rc.bottom>=mid) pick=SEC[k].p; }
-      return pick;
-    }
-    if(SEC.length){
-      if('IntersectionObserver' in window){
-        var io=new IntersectionObserver(function(){ aim(current()); },{threshold:[0,0.1,0.25,0.4,0.55,0.7,0.85,1]});
-        SEC.forEach(function(s){ io.observe(s.el); });
-      }
-      var st=false; // also update from element positions on any scroll (robust to scroll model)
-      window.addEventListener('scroll',function(){ if(st) return; st=true; requestAnimationFrame(function(){ aim(current()); st=false; }); },{passive:true,capture:true});
-      aim(current());
-    }
-  })();
-
-  // ── Hero: cycle the word in the yellow pill — a day's worth of real things ──
-  // Gentle cross-fade; the pill's width morphs to fit each word; loops forever.
-  (function(){
-    var el=document.getElementById('swap'); if(!el) return;
-    var reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var WORDS=['colors','joys','friends','beers','books','walks','coffee','sunsets',
-               'music','laughs','moments','naps','hugs','snacks','songs','sparks'];
-    var i=0,widths=[];
-    // pre-measure every word so we can animate min-width smoothly (no clipping, no jitter)
-    function measure(){
-      var keep=el.textContent; el.style.minWidth='0';
-      widths=WORDS.map(function(w){ el.textContent=w; return Math.ceil(el.offsetWidth); });
-      el.textContent=keep; el.style.minWidth=widths[i]+'px';
-    }
-    el.textContent=WORDS[0]; measure();
-    if(reduce) return;                                            // static first word
-    var rt; window.addEventListener('resize',function(){ clearTimeout(rt); rt=setTimeout(measure,150); });
-    setInterval(function(){
-      el.classList.add('out');                                    // fade + width morph while hidden
-      i=(i+1)%WORDS.length; el.style.minWidth=widths[i]+'px';
-      setTimeout(function(){
-        el.textContent=WORDS[i]; el.classList.remove('out');      // swap text, fade back in
-      },380);
-    },1650);
-  })();
-
-  // ── Scroll reveal (no-JS shows everything; IntersectionObserver handles jumps too) ──
-  (function(){
-    var items=Array.prototype.slice.call(document.querySelectorAll('.reveal'));
-    if(!items.length) return;
-    document.documentElement.classList.add('reveal-js');
-    if(!('IntersectionObserver' in window)){ items.forEach(function(el){el.classList.add('in');}); return; }
-    var io=new IntersectionObserver(function(entries){
-      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
-    },{rootMargin:'0px 0px -10% 0px'});
-    items.forEach(function(el){ io.observe(el); });
-  })();
-
-  // ── Screen-time chart: hover / focus / tap a bar to read its detail ──
-  (function(){
-    var chart=document.getElementById('chart')||document.querySelector('.chart');
-    var tip=document.getElementById('chartTip');
-    if(!chart||!tip) return;
-    var bars=Array.prototype.slice.call(chart.querySelectorAll('.bar'));
-    if(!bars.length) return;
-    var active=null;
-    function show(bar){
-      active=bar;
-      tip.innerHTML='<b>'+bar.getAttribute('data-place')+'</b><span>'+
-        bar.getAttribute('data-time')+' a day · '+bar.getAttribute('data-note')+'</span>';
-      tip.classList.add('on'); tip.setAttribute('aria-hidden','false');
-      bars.forEach(function(b){ b.classList.toggle('is-active',b===bar); });
-      var cr=chart.getBoundingClientRect(), fill=bar.querySelector('.bar-fill'), fr=fill.getBoundingClientRect();
-      // pop above the bar's fill, clamped so edge bars don't overflow the chart
-      var x=fr.left-cr.left+fr.width/2;
-      x=Math.max(64,Math.min(cr.width-64,x));
-      tip.style.left=x+'px';
-      tip.style.top=Math.max(0,fr.top-cr.top-10)+'px';
-    }
-    function hide(){ active=null; tip.classList.remove('on'); tip.setAttribute('aria-hidden','true');
-      bars.forEach(function(b){ b.classList.remove('is-active'); }); }
-    bars.forEach(function(bar){
-      bar.addEventListener('mouseenter',function(){ show(bar); });
-      bar.addEventListener('focus',function(){ show(bar); });
-      bar.addEventListener('blur',hide);
-      bar.addEventListener('click',function(){ active===bar?hide():show(bar); });
-    });
-    chart.addEventListener('mouseleave',hide);
-  })();
-
-  // ── Hero mockup: map the screencast onto the iPhone's tilted screen (matrix3d homography) ──
-  (function(){
-    var wrap=document.querySelector('.mockup'); if(!wrap) return;
-    var vid=wrap.querySelector('.mockup-screen'), img=wrap.querySelector('.mockup-frame');
-    if(!vid||!img) return;
-    var CORN=[[0.2116,0.0504],[0.9225,0.0812],[0.7873,0.9489],[0.0764,0.9182]]; // TL,TR,BR,BL true screen corners (line-fit)
-    var VAR=2384/1080;                                                          // screencast aspect ratio
-    function solve(A,b){                                                        // Gaussian elimination (n×n)
-      var n=b.length,i,j,k;
-      for(i=0;i<n;i++){
-        var p=i; for(j=i+1;j<n;j++){ if(Math.abs(A[j][i])>Math.abs(A[p][i])) p=j; }
-        var ta=A[i];A[i]=A[p];A[p]=ta; var tb=b[i];b[i]=b[p];b[p]=tb;
-        var pv=A[i][i]; for(j=i;j<n;j++){ A[i][j]/=pv; } b[i]/=pv;
-        for(k=0;k<n;k++){ if(k===i) continue; var f=A[k][i]; for(j=i;j<n;j++){ A[k][j]-=f*A[i][j]; } b[k]-=f*b[i]; }
-      }
-      return b;
-    }
-    function update(){
-      var cw=wrap.clientWidth, ch=wrap.clientHeight; if(!cw||!ch) return;
-      var w=cw, h=cw*VAR;
-      vid.style.width=w+'px'; vid.style.height=h+'px';
-      var from=[[0,0],[w,0],[w,h],[0,h]], to=CORN.map(function(c){ return [c[0]*cw,c[1]*ch]; });
-      // overfill the screen a touch so the bezel always hides the video edges (no corner gaps)
-      var cx=(to[0][0]+to[1][0]+to[2][0]+to[3][0])/4, cy=(to[0][1]+to[1][1]+to[2][1]+to[3][1])/4, S=1.008;
-      to=to.map(function(p){ return [cx+(p[0]-cx)*S, cy+(p[1]-cy)*S]; });
-      var A=[],bb=[],i;
-      for(i=0;i<4;i++){
-        var X=from[i][0],Y=from[i][1],u=to[i][0],v=to[i][1];
-        A.push([X,Y,1,0,0,0,-X*u,-Y*u]); bb.push(u);
-        A.push([0,0,0,X,Y,1,-X*v,-Y*v]); bb.push(v);
-      }
-      var H=solve(A,bb);
-      vid.style.borderRadius=(cw*0.115)+'px';   // rounded to match the phone's screen corners
-      vid.style.transform='matrix3d('+[H[0],H[3],0,H[6], H[1],H[4],0,H[7], 0,0,1,0, H[2],H[5],0,1].join(',')+')';
-      vid.style.opacity='1';
-    }
-    if('ResizeObserver' in window){ new ResizeObserver(update).observe(wrap); }
-    window.addEventListener('resize',update);
-    window.addEventListener('load',update);
-    if(document.fonts&&document.fonts.ready){ document.fonts.ready.then(update); } // reflow after Bricolage loads
-    if(img.complete) update(); else img.addEventListener('load',update);
-    requestAnimationFrame(update); setTimeout(update,300); setTimeout(update,900); // catch late layout shifts
-    update();
-  })();
-
-  // ── Storyline: pinned scrollytelling — advance phones one by one, slide text, shift the gradient ──
-  (function(){
-    var track=document.getElementById('storyTrack'), stage=document.getElementById('storyStage');
-    if(!track||!stage) return;
-    var steps=[].slice.call(document.querySelectorAll('.story-step'));
-    var phones=[].slice.call(document.querySelectorAll('.story-phone'));
-    var N=steps.length; if(!N) return;
-    // per-step gradient [top, bottom] — deep, distinct, white-text friendly (mirrors the day's mood)
-    var G=[
-      [[30,42,82],[14,20,40]],   // 01 indigo — morning
-      [[104,48,84],[42,18,48]],  // 02 magenta — filled
-      [[40,88,104],[16,46,58]],  // 03 teal — unlock
-      [[108,54,32],[46,20,16]]   // 04 ember — blocked
-    ];
-    var dotsWrap=document.getElementById('storyDots'), dots=[];
-    if(dotsWrap){ dots=steps.map(function(_,i){ var d=document.createElement('span'); d.className='story-dot'; dotsWrap.appendChild(d); return d; }); }
-    function rgb(c){ return 'rgb('+Math.round(c[0])+','+Math.round(c[1])+','+Math.round(c[2])+')'; }
-    function mix(a,b,t){ return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t]; }
-    var cur=-1;
-    function activate(i){
-      if(i===cur) return; cur=i;
-      steps.forEach(function(s,k){ s.classList.toggle('is-active',k===i); });
-      phones.forEach(function(p,k){ p.classList.toggle('is-active',k===i); });
-      dots.forEach(function(d,k){ d.classList.toggle('on',k===i); });
-    }
-    var raf=false;
-    function tick(){
-      raf=false;
-      var total=track.offsetHeight-stage.offsetHeight;
-      var p=total>0 ? (-track.getBoundingClientRect().top)/total : 0;
-      p=Math.max(0,Math.min(1,p));
-      var x=p*(N-1), lo=Math.floor(x), hi=Math.min(N-1,lo+1), f=x-lo;
-      activate(Math.round(x));
-      stage.style.background='linear-gradient(160deg,'+rgb(mix(G[lo][0],G[hi][0],f))+','+rgb(mix(G[lo][1],G[hi][1],f))+')';
-    }
-    function onScroll(){ if(!raf){ raf=true; requestAnimationFrame(tick); } }
-    activate(0); tick();
-    window.addEventListener('scroll',onScroll,{passive:true});
-    window.addEventListener('resize',onScroll);
-  })();
-</script>
-
+  <section class="maker-section" id="maker" aria-labelledby="maker-title"><div class="maker-layout wrap"><div class="maker-photo"><img src="assets/kosta-portrait.png" width="1024" height="1536" loading="lazy" alt="Kosta, the maker of Nowhere"></div><div><h2 id="maker-title">A note from Kosta.</h2><p>I made Nowhere because my days were starting to feel the same. I wanted to remember what happened outside the feed.</p><p>A walk or a conversation. Something I made that day. Small things I don't want to forget.</p><p>This is a personal project. Try it and tell me what you think.</p><a class="text-link" href="mailto:kostill@gmail.com">Write to me <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19 19 5M5 5h14v14"/></svg></a></div></div></section>
+</main>
+<footer class="site-footer" id="footer"><div class="footer-layout wrap"><a class="wordmark" href="#top">NOWHERE</a><nav class="footer-actions" aria-label="Get Nowhere and read the blog"><a class="footer-download" href="https://apps.apple.com/app/nowhere-screen-time-control/id6753218397" aria-label="Download Nowhere on the App Store">Download</a><a class="footer-blog" href="https://www.pudan.me/blog">Blog</a></nav><nav class="footer-links" aria-label="Contact, legal and personal links"><a href="mailto:kostill@gmail.com">Contact</a><a href="https://nowhere.pudan.me/privacy.html">Privacy</a><a href="https://nowhere.pudan.me/terms.html">Terms</a><a href="https://www.pudan.me/" aria-label="Kosta's personal website">Made by Kosta</a></nav></div></footer>
 </body>
 </html>
