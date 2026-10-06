@@ -2,7 +2,9 @@
 
 Public static website at https://nowhere.pudan.me/, served by GitHub Pages from `main` at the repository root.
 
-The landing includes three complete day themes with a swatch selector and random opening, native phone demonstrations, interactive moment previews, supplied day posters and three supplied music samples.
+The landing includes three complete day themes with a New Day button and random opening, native phone demonstrations, interactive moment previews, supplied day posters and three supplied music samples.
+
+New Day randomly selects one of the other two themes.
 
 Music order: coral / Soft Geometry, blue / Living Circuit, peach / Electric Ritual. Audio starts manually; one track plays at a time.
 

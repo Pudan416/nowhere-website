@@ -46,7 +46,7 @@
       lines: ['Stayed<br>home', 'Chilled', 'Listened<br>to music']
     }
   };
-  const buttons = Array.from(document.querySelectorAll('[data-theme-choice]'));
+  const newDayButton = document.querySelector('#new-day');
   const current = () => themes[document.documentElement.dataset.theme] || themes.yellow;
   const source = (selector, src, width, height, alt) => {
     const image = document.querySelector(selector);
@@ -74,13 +74,13 @@
       button.querySelector('.moment-label').innerHTML = config.lines[index];
       button.querySelector('.moment-ray').src = `assets/ray-${rayFiles[index]}-figma.png`;
     });
-    buttons.forEach(button => button.setAttribute('aria-pressed', String(button.dataset.themeChoice === theme)));
     window.dispatchEvent(new CustomEvent('nowhere:theme', { detail: { theme, config } }));
-    if (announce) document.querySelector('#theme-status').textContent = `${config.name} colors selected.`;
+    if (announce) document.querySelector('#theme-status').textContent = `A new day: ${config.labels.join(', ')}.`;
   }
   window.NowhereTheme = { current, apply };
-  buttons.forEach(button => button.addEventListener('click', () => {
-    if (button.dataset.themeChoice !== document.documentElement.dataset.theme) apply(button.dataset.themeChoice);
-  }));
+  newDayButton.addEventListener('click', () => {
+    const choices = Object.keys(themes).filter(theme => theme !== document.documentElement.dataset.theme);
+    apply(choices[Math.floor(Math.random() * choices.length)]);
+  });
   apply(document.documentElement.dataset.theme, false);
 })();
