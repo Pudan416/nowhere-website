@@ -1,0 +1,51 @@
+ .analytics-banner {
+  position: fixed;
+  z-index: 10000;
+  inset: auto 20px 20px;
+  width: min(720px, calc(100% - 40px));
+  margin-inline: auto;
+  padding: 18px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  color: #f7f4e8;
+  background: #222831;
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 14px;
+  box-shadow: 0 18px 55px rgba(0,0,0,.28);
+  font: 14px/1.45 system-ui, sans-serif;
+}
+.analytics-banner__copy { min-width: 0; }
+.analytics-banner__copy strong { display: block; margin-bottom: 4px; font-size: 15px; }
+.analytics-banner__copy p { margin: 0; color: rgba(247,244,232,.78); }
+.analytics-banner__copy a { color: #ffd369; text-decoration: underline; text-underline-offset: 2px; }
+.analytics-banner__actions { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.analytics-button {
+  min-height: 40px;
+  padding: 8px 12px;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 8px;
+  color: inherit;
+  background: transparent;
+  font: 600 13px/1.2 system-ui, sans-serif;
+  cursor: pointer;
+}
+.analytics-button--primary { color: #222831; background: #ffd369; border-color: #ffd369; }
+.analytics-button:hover { filter: brightness(1.08); }
+.analytics-button:focus-visible, .analytics-settings-link:focus-visible { outline: 3px solid #5fc8e8; outline-offset: 3px; }
+.analytics-settings-link {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: none;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+@media (max-width: 600px) {
+  .analytics-banner { inset: auto 12px 12px; width: calc(100% - 24px); padding: 16px; display: block; }
+  .analytics-banner__actions { margin-top: 14px; }
+  .analytics-button { flex: 1; }
+}
