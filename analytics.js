@@ -42,13 +42,14 @@
     banner.dataset.analyticsBanner = '';
     banner.setAttribute('aria-label', 'Analytics preferences');
     banner.innerHTML = `
-      <div class="analytics-banner__copy">
-        <strong>Help make Nowhere better?</strong>
-        <p>Optional analytics show which pages are useful. Nothing is sent to Google unless you allow it. <a href="/privacy.html">Privacy</a></p>
+      <div class="analytics-note__topline"><span class="analytics-note__dot" aria-hidden="true"></span><span>ONE SMALL THING</span><a href="/privacy.html">Privacy</a></div>
+      <div class="analytics-note__copy">
+        <strong>Hey, quick question.</strong>
+        <p>Can I see which pages you visit?</p>
       </div>
-      <div class="analytics-banner__actions">
-        <button type="button" data-analytics-choice="rejected" class="analytics-button analytics-button--quiet">No thanks</button>
-        <button type="button" data-analytics-choice="accepted" class="analytics-button analytics-button--primary">Allow analytics</button>
+      <div class="analytics-note__actions">
+        <button type="button" data-analytics-choice="rejected" class="analytics-button analytics-button--quiet">I’ll pass</button>
+        <button type="button" data-analytics-choice="accepted" class="analytics-button analytics-button--primary">Go ahead</button>
       </div>`;
     document.body.appendChild(banner);
     banner.querySelectorAll('[data-analytics-choice]').forEach(button => {
