@@ -16,7 +16,7 @@ To preview locally, run `python3 -m http.server 4179` from this directory.
 
 ## Notes blog
 
-`/blog/` contains eight static articles with the landing's local Onest and Nowhere fonts. Article prose, titles, slugs and imported publication dates are preserved. The index, article navigation and reading layout have their own stylesheet; landing themes and New Day remain independent.
+`/blog/` contains nine static articles with the landing's local Onest and Nowhere fonts. Article prose, titles, slugs and imported publication dates are preserved. The index, article navigation and reading layout have their own stylesheet; landing themes and New Day remain independent.
 
 Original WebP images remain in `blog/assets/`. Generated `-w320`, `-w640` and (where the original is large enough) `-w1280` WebP renditions preserve each full image's aspect ratio. Index thumbnails use 320/640px sources; articles select 320/640/1280px sources. Dimensions reserve space, and images load lazily. Keep originals when regenerating image sizes.
 
